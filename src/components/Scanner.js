@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './Scanner.css';
-const { dialog } = require('electron').remote || {};
 
 function Scanner({ drive, onScan, scanning }) {
   const [drivePath, setDrivePath] = useState('');
