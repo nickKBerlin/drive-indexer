@@ -5,6 +5,8 @@ function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
   const [selectedDrive, setSelectedDrive] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('fileName');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -34,6 +36,55 @@ function SearchPanel({ drives, onSearch, results }) {
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  const sortedResults = [...results].sort((a, b) => {
+    let aVal, bVal;
+    
+    switch(sortBy) {
+      case 'fileName':
+        aVal = a.fileName.toLowerCase();
+        bVal = b.fileName.toLowerCase();
+        break;
+      case 'fileSize':
+        aVal = a.fileSize;
+        bVal = b.fileSize;
+        break;
+      case 'modifiedAt':
+        aVal = new Date(a.modifiedAt).getTime();
+        bVal = new Date(b.modifiedAt).getTime();
+        break;
+      case 'category':
+        aVal = a.category;
+        bVal = b.category;
+        break;
+      case 'driveName':
+        aVal = a.driveName;
+        bVal = b.driveName;
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortOrder === 'asc') {
+      return aVal > bVal ? 1 : -1;
+    } else {
+      return aVal < bVal ? 1 : -1;
+    }
+  });
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
   };
 
   return (
@@ -82,20 +133,49 @@ function SearchPanel({ drives, onSearch, results }) {
       {results.length > 0 && (
         <div className="results-section">
           <h3>Found {results.length} files</h3>
-          <div className="results-list">
-            {results.map((file) => (
-              <div key={file.id} className="result-item">
-                <div className="result-info">
-                  <div className="result-name">{file.fileName}</div>
-                  <div className="result-meta">
-                    <span className="meta-item">📀 {file.driveName}</span>
-                    <span className="meta-item">📂 {file.filePath}</span>
-                    <span className="meta-item">{formatSize(file.fileSize)}</span>
-                    <span className="meta-item tag">{file.category}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="results-table-container">
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th onClick={() => handleSort('fileName')} className="sortable">
+                    File Name {sortBy === 'fileName' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('driveName')} className="sortable">
+                    Drive {sortBy === 'driveName' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('fileSize')} className="sortable">
+                    Size {sortBy === 'fileSize' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('category')} className="sortable">
+                    Type {sortBy === 'category' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={() => handleSort('modifiedAt')} className="sortable">
+                    Modified {sortBy === 'modifiedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th>Path</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedResults.map((file) => (
+                  <tr key={file.id}>
+                    <td className="file-name">
+                      <span className="file-icon">📄</span>
+                      {file.fileName}
+                    </td>
+                    <td className="drive-name">
+                      <span className="drive-icon">📀</span>
+                      {file.driveName}
+                    </td>
+                    <td className="file-size">{formatSize(file.fileSize)}</td>
+                    <td className="file-type">
+                      <span className="category-badge">{file.category}</span>
+                    </td>
+                    <td className="file-date">{formatDate(file.modifiedAt)}</td>
+                    <td className="file-path" title={file.filePath}>{file.filePath}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

@@ -66,58 +66,109 @@
   margin-bottom: 15px;
 }
 
-.results-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 600px;
-  overflow-y: auto;
-}
-
-.result-item {
+.results-table-container {
   background: white;
   border: 1px solid #ddd;
   border-radius: 6px;
+  overflow-x: auto;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.results-table thead {
+  background: #f5f5f5;
+  border-bottom: 2px solid #ddd;
+}
+
+.results-table th {
   padding: 12px;
-  transition: all 0.3s;
-}
-
-.result-item:hover {
-  border-color: #4a90e2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.result-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.result-name {
+  text-align: left;
   font-weight: 600;
   color: #333;
-  word-break: break-word;
+  white-space: nowrap;
 }
 
-.result-meta {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  font-size: 12px;
+.results-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.results-table th.sortable:hover {
+  background: #eee;
+}
+
+.results-table tbody tr {
+  border-bottom: 1px solid #eee;
+  transition: background 0.2s;
+}
+
+.results-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.results-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #333;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-icon {
+  margin-right: 8px;
+}
+
+.drive-name {
   color: #666;
 }
 
-.meta-item {
-  display: flex;
-  align-items: center;
+.drive-icon {
+  margin-right: 6px;
 }
 
-.meta-item.tag {
-  background: #f0f7ff;
+.file-size {
+  color: #666;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.file-type {
+  text-align: center;
+}
+
+.category-badge {
+  display: inline-block;
+  background: #e8f4f8;
   color: #4a90e2;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
+  font-size: 12px;
   font-weight: 500;
+}
+
+.file-date {
+  color: #666;
+  white-space: nowrap;
+}
+
+.file-path {
+  color: #999;
+  font-size: 12px;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .no-results {
@@ -125,4 +176,20 @@
   padding: 40px 20px;
   color: #999;
   font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .results-table {
+    font-size: 12px;
+  }
+  
+  .results-table th,
+  .results-table td {
+    padding: 8px;
+  }
+  
+  .file-path {
+    max-width: 150px;
+  }
 }
