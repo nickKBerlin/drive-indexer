@@ -9,62 +9,85 @@ function App() {
   const [selectedDrive, setSelectedDrive] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
-  const [activeTab, setActiveTab] = useState('drives'); // 'drives' or 'search'
+  const [activeTab, setActiveTab] = useState('drives');
+  const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('[App] Initializing...');
     loadDrives();
   }, []);
 
   const loadDrives = async () => {
     try {
+      console.log('[App] Loading drives...');
       const drivesData = await window.api.getDrives();
+      console.log('[App] Loaded', drivesData.length, 'drives');
       setDrives(drivesData);
+      setError('');
     } catch (err) {
-      console.error('Error loading drives:', err);
+      console.error('[App] Error loading drives:', err);
+      setError('Error loading drives: ' + err.message);
     }
   };
 
   const handleAddDrive = async (driveData) => {
     try {
+      console.log('[App] Adding drive:', driveData.name);
       const newDrive = await window.api.addDrive(driveData);
+      console.log('[App] Drive added successfully');
       setDrives([...drives, newDrive]);
+      setError('');
     } catch (err) {
-      alert('Error adding drive: ' + err.message);
+      console.error('[App] Error adding drive:', err);
+      setError('Error adding drive: ' + err.message);
     }
   };
 
   const handleDeleteDrive = async (driveId) => {
     if (window.confirm('Are you sure? This will remove the drive and all its indexed files.')) {
       try {
+        console.log('[App] Deleting drive:', driveId);
         await window.api.deleteDrive(driveId);
         setDrives(drives.filter(d => d.id !== driveId));
         setSelectedDrive(null);
+        setError('');
       } catch (err) {
-        alert('Error deleting drive: ' + err.message);
+        console.error('[App] Error deleting drive:', err);
+        setError('Error deleting drive: ' + err.message);
       }
     }
   };
 
   const handleScanDrive = async (driveId, drivePath) => {
+    console.log('[App] Starting scan:', drivePath);
     setScanning(true);
+    setError('');
     try {
+      console.log('[App] Calling API to scan...');
       const result = await window.api.scanDrive(driveId, drivePath);
+      console.log('[App] Scan completed, reloading drives...');
       await loadDrives();
       setScanning(false);
       alert(`Scan complete! Indexed ${result.fileCount} files.`);
     } catch (err) {
+      console.error('[App] Error scanning drive:', err);
       setScanning(false);
+      setError('Error scanning drive: ' + err.message);
       alert('Error scanning drive: ' + err.message);
     }
   };
 
   const handleSearch = async (query, filters) => {
     try {
+      console.log('[App] Searching:', query);
       const results = await window.api.searchFiles(query, filters);
+      console.log('[App] Found', results.length, 'results');
       setSearchResults(results);
       setActiveTab('results');
+      setError('');
     } catch (err) {
-      alert('Error searching: ' + err.message);
+      console.error('[App] Error searching:', err);
+      setError('Error searching: ' + err.message);
     }
   };
 
@@ -74,6 +97,19 @@ function App() {
         <h1>🎬 Drive Indexer</h1>
         <p>Find your creative assets across all drives</p>
       </header>
+
+      {error && (
+        <div style={{
+          background: '#fee',
+          border: '1px solid #fcc',
+          color: '#c33',
+          padding: '10px 20px',
+          margin: '10px',
+          borderRadius: '4px'
+        }}>
+          {error}
+        </div>
+      )}
 
       <div className="app-container">
         <nav className="app-nav">
