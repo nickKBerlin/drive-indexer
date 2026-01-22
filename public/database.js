@@ -7,6 +7,7 @@ const { v4: uuidv4 } = require('uuid');
 class Database {
   constructor() {
     const dbPath = path.join(app.getPath('userData'), 'drive-indexer.db');
+    console.log('[Database] Creating database at:', dbPath);
     this.db = new sqlite3.Database(dbPath);
     this.initializeDb();
   }
@@ -54,8 +55,13 @@ class Database {
   getDrives() {
     return new Promise((resolve, reject) => {
       this.db.all('SELECT * FROM drives ORDER BY createdAt DESC', (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
+        if (err) {
+          console.error('[Database] Error in getDrives:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Got', rows?.length || 0, 'drives');
+          resolve(rows || []);
+        }
       });
     });
   }
@@ -68,8 +74,13 @@ class Database {
         `INSERT INTO drives (id, name, description, createdAt) VALUES (?, ?, ?, ?)`,
         [id, driveData.name, driveData.description || '', createdAt],
         function (err) {
-          if (err) reject(err);
-          else resolve({ id, ...driveData, createdAt, fileCount: 0, totalSize: 0 });
+          if (err) {
+            console.error('[Database] Error in addDrive:', err);
+            reject(err);
+          } else {
+            console.log('[Database] Drive added:', id);
+            resolve({ id, ...driveData, createdAt, fileCount: 0, totalSize: 0 });
+          }
         }
       );
     });
@@ -81,8 +92,12 @@ class Database {
         `UPDATE drives SET name = ?, description = ? WHERE id = ?`,
         [driveData.name, driveData.description || '', driveId],
         function (err) {
-          if (err) reject(err);
-          else resolve({ id: driveId, ...driveData });
+          if (err) {
+            console.error('[Database] Error in updateDrive:', err);
+            reject(err);
+          } else {
+            resolve({ id: driveId, ...driveData });
+          }
         }
       );
     });
@@ -91,8 +106,13 @@ class Database {
   deleteDrive(driveId) {
     return new Promise((resolve, reject) => {
       this.db.run(`DELETE FROM drives WHERE id = ?`, [driveId], function (err) {
-        if (err) reject(err);
-        else resolve({ success: true });
+        if (err) {
+          console.error('[Database] Error in deleteDrive:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Drive deleted:', driveId);
+          resolve({ success: true });
+        }
       });
     });
   }
@@ -100,6 +120,25 @@ class Database {
   scanDrive(driveId, drivePath, progressCallback) {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log('[Database] Starting scan of:', drivePath);
+        
+        // Validate the path
+        if (!drivePath || typeof drivePath !== 'string') {
+          throw new Error('Invalid drive path');
+        }
+
+        // Normalize path
+        let normalizedPath = drivePath.trim();
+        // Convert backslashes to forward slashes for consistency
+        normalizedPath = normalizedPath.replace(/\\/g, '/');
+        console.log('[Database] Normalized path:', normalizedPath);
+
+        // Check if path exists
+        if (!fs.existsSync(normalizedPath)) {
+          throw new Error(`Path does not exist: ${normalizedPath}`);
+        }
+
+        console.log('[Database] Path exists, clearing old files...');
         // Clear old files for this drive
         await this.clearDriveFiles(driveId);
 
@@ -107,6 +146,7 @@ class Database {
         let fileCount = 0;
         let totalSize = 0;
         let processedCount = 0;
+        let errorCount = 0;
 
         const getFileCategory = (ext) => {
           const categoryMap = {
@@ -134,7 +174,6 @@ class Database {
             '.png': 'Image',
             '.tiff': 'Image',
             '.tif': 'Image',
-            '.psd': 'Image',
             '.ai': 'Vector',
             '.eps': 'Vector',
             '.pdf': 'Document',
@@ -150,6 +189,8 @@ class Database {
         const scanDirectory = (dir, callback) => {
           fs.readdir(dir, { withFileTypes: true }, (err, files) => {
             if (err) {
+              console.warn('[Database] Error reading directory', dir, ':', err.message);
+              errorCount++;
               callback();
               return;
             }
@@ -161,68 +202,95 @@ class Database {
             }
 
             files.forEach((file) => {
-              const fullPath = path.join(dir, file.name);
-              const relativePath = path.relative(drivePath, fullPath);
+              try {
+                const fullPath = path.join(dir, file.name);
+                const relativePath = path.relative(normalizedPath, fullPath);
 
-              if (file.isDirectory()) {
-                scanDirectory(fullPath, () => {
-                  pending--;
-                  if (pending === 0) callback();
-                });
-              } else {
-                try {
-                  const stats = fs.statSync(fullPath);
-                  const ext = path.extname(file.name);
-                  const category = getFileCategory(ext);
-                  const fileId = uuidv4();
-
-                  this.db.run(
-                    `INSERT INTO files (id, driveId, fileName, filePath, fileSize, fileType, category, modifiedAt, scannedAt)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                      fileId,
-                      driveId,
-                      file.name,
-                      relativePath,
-                      stats.size,
-                      ext,
-                      category,
-                      stats.mtime.toISOString(),
-                      scannedAt,
-                    ],
-                    () => {
-                      fileCount++;
-                      totalSize += stats.size;
-                      processedCount++;
-                      if (processedCount % 100 === 0) {
-                        progressCallback({ fileCount, status: `Scanned ${fileCount} files...` });
-                      }
+                if (file.isDirectory()) {
+                  // Skip system directories
+                  if (file.name.startsWith('.') || file.name === 'System Volume Information' || file.name === '$RECYCLE.BIN') {
+                    pending--;
+                    if (pending === 0) callback();
+                  } else {
+                    scanDirectory(fullPath, () => {
                       pending--;
                       if (pending === 0) callback();
-                    }
-                  );
-                } catch (e) {
-                  pending--;
-                  if (pending === 0) callback();
+                    });
+                  }
+                } else {
+                  try {
+                    const stats = fs.statSync(fullPath);
+                    const ext = path.extname(file.name);
+                    const category = getFileCategory(ext);
+                    const fileId = uuidv4();
+
+                    this.db.run(
+                      `INSERT INTO files (id, driveId, fileName, filePath, fileSize, fileType, category, modifiedAt, scannedAt)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                      [
+                        fileId,
+                        driveId,
+                        file.name,
+                        relativePath,
+                        stats.size,
+                        ext,
+                        category,
+                        stats.mtime.toISOString(),
+                        scannedAt,
+                      ],
+                      (err) => {
+                        if (!err) {
+                          fileCount++;
+                          totalSize += stats.size;
+                          processedCount++;
+                          if (processedCount % 100 === 0) {
+                            console.log('[Database] Scan progress:', fileCount, 'files');
+                            progressCallback({ fileCount, status: `Scanned ${fileCount} files...` });
+                          }
+                        }
+                        pending--;
+                        if (pending === 0) callback();
+                      }
+                    );
+                  } catch (e) {
+                    console.warn('[Database] Error processing file', file.name, ':', e.message);
+                    errorCount++;
+                    pending--;
+                    if (pending === 0) callback();
+                  }
                 }
+              } catch (e) {
+                console.warn('[Database] Error in forEach:', e.message);
+                errorCount++;
+                pending--;
+                if (pending === 0) callback();
               }
             });
           });
         };
 
-        scanDirectory(drivePath, () => {
+        console.log('[Database] Starting directory scan...');
+        scanDirectory(normalizedPath, () => {
+          console.log('[Database] Directory scan complete, updating drive stats...');
           // Update drive stats
           const lastScanned = new Date().toISOString();
           this.db.run(
             `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ? WHERE id = ?`,
             [fileCount, totalSize, lastScanned, driveId],
-            () => {
-              progressCallback({ fileCount, status: 'Scan complete!' });
-              resolve({ fileCount, totalSize, lastScanned });
+            (err) => {
+              if (err) {
+                console.error('[Database] Error updating drive stats:', err);
+                reject(err);
+              } else {
+                console.log('[Database] Scan complete! Files:', fileCount, 'Errors:', errorCount);
+                progressCallback({ fileCount, status: 'Scan complete!' });
+                resolve({ fileCount, totalSize, lastScanned });
+              }
             }
           );
         });
       } catch (err) {
+        console.error('[Database] Error in scanDrive:', err);
         reject(err);
       }
     });
@@ -261,8 +329,13 @@ class Database {
       sql += ` ORDER BY f.fileName ASC LIMIT 1000`;
 
       this.db.all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
+        if (err) {
+          console.error('[Database] Error in searchFiles:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Search returned', rows?.length || 0, 'results');
+          resolve(rows || []);
+        }
       });
     });
   }
@@ -277,8 +350,12 @@ class Database {
         ORDER BY count DESC
       `;
       this.db.all(sql, [driveId], (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows || []);
+        if (err) {
+          console.error('[Database] Error in getFileStats:', err);
+          reject(err);
+        } else {
+          resolve(rows || []);
+        }
       });
     });
   }
@@ -286,8 +363,13 @@ class Database {
   clearDriveFiles(driveId) {
     return new Promise((resolve, reject) => {
       this.db.run(`DELETE FROM files WHERE driveId = ?`, [driveId], function (err) {
-        if (err) reject(err);
-        else resolve({ deletedCount: this.changes });
+        if (err) {
+          console.error('[Database] Error in clearDriveFiles:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Cleared', this.changes, 'files for drive:', driveId);
+          resolve({ deletedCount: this.changes });
+        }
       });
     });
   }
