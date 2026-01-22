@@ -25,10 +25,16 @@ function Scanner({ drive, onScan, scanning }) {
   };
 
   React.useEffect(() => {
-    const unsubscribe = window.api?.onScanProgress?.((data) => {
+    const handleProgress = (data) => {
       setScanProgress(data.status);
-    });
-    return () => unsubscribe?.();
+    };
+    
+    if (window.api?.onScanProgress) {
+      window.api.onScanProgress(handleProgress);
+    }
+    
+    // No cleanup needed for this listener
+    return () => {};
   }, []);
 
   return (
