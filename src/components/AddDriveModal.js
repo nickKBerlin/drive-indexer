@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './AddDriveModal.css';
-const { dialog } = require('electron').remote || {};
 
 function AddDriveModal({ onAdd, onClose, existingNames }) {
   const [driveName, setDriveName] = useState('');
