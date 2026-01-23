@@ -83,7 +83,6 @@ function App() {
       const results = await window.api.searchFiles(query, filters);
       console.log('[App] Found', results.length, 'results');
       setSearchResults(results);
-      setActiveTab('results');
       setError('');
     } catch (err) {
       console.error('[App] Error searching:', err);
@@ -153,33 +152,6 @@ function App() {
               onSearch={handleSearch}
               results={searchResults}
             />
-          )}
-
-          {activeTab === 'results' && searchResults.length > 0 && (
-            <div className="results-panel">
-              <h2>Search Results ({searchResults.length})</h2>
-              <div className="results-list">
-                {searchResults.map((file) => (
-                  <div key={file.id} className="result-item">
-                    <div className="result-header">
-                      <span className="result-filename">{file.fileName}</span>
-                      <span className="result-category">{file.category}</span>
-                    </div>
-                    <div className="result-details">
-                      <span className="result-drive">📀 {file.driveName}</span>
-                      <span className="result-path">{file.filePath}</span>
-                      <span className="result-size">({(file.fileSize / 1024 / 1024).toFixed(2)} MB)</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button
-                className="button secondary"
-                onClick={() => setActiveTab('search')}
-              >
-                ← Back to Search
-              </button>
-            </div>
           )}
         </div>
       </div>
