@@ -7,7 +7,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [copiedId, setCopiedId] = useState(null);
+  const [actionedId, setActionedId] = useState(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -44,13 +44,29 @@ function SearchPanel({ drives, onSearch, results }) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const copyToClipboard = async (text, fileId) => {
+  const showInFolder = async (file, fileId) => {
     try {
-      await navigator.clipboard.writeText(text);
-      setCopiedId(fileId);
-      setTimeout(() => setCopiedId(null), 2000);
+      // Need to get the drive's actual current path
+      const drive = drives.find(d => d.name === file.driveName);
+      if (!drive) {
+        const driveLetter = prompt(
+          `Enter the current drive letter for "${file.driveName}"\n\nFile: ${file.fileName}\nOriginal path: ${file.filePath}`,
+          'G'
+        );
+        if (!driveLetter) return;
+        
+        const fullPath = `${driveLetter}:/${file.filePath}`.replace(/\//g, '\\');
+        await window.api.showInFolder(fullPath);
+      } else {
+        // If we have drive info, construct the path
+        const fullPath = file.filePath.replace(/\//g, '\\');
+        await window.api.showInFolder(fullPath);
+      }
+      
+      setActionedId(fileId);
+      setTimeout(() => setActionedId(null), 2000);
     } catch (err) {
-      alert('Failed to copy: ' + err.message);
+      alert('Could not open folder: ' + err.message);
     }
   };
 
@@ -187,10 +203,10 @@ function SearchPanel({ drives, onSearch, results }) {
                     <td className="actions-cell">
                       <button
                         className="action-button"
-                        onClick={() => copyToClipboard(file.filePath, file.id)}
-                        title="Copy path to clipboard"
+                        onClick={() => showInFolder(file, file.id)}
+                        title="Show file in Explorer"
                       >
-                        {copiedId === file.id ? '✅' : '📋'}
+                        {actionedId === file.id ? '✅' : '📂'}
                       </button>
                     </td>
                   </tr>

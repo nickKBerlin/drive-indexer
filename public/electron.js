@@ -2,7 +2,7 @@ const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
-const { dialog } = require('electron');
+const { dialog, shell } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const Database = require('./database');
@@ -109,7 +109,7 @@ ipcMain.handle('scan-drive', async (event, driveId, drivePath) => {
     return await db.scanDrive(driveId, drivePath, (progress) => {
       console.log('[IPC] Scan progress:', progress.fileCount);
       if (mainWindow) {
-        mainWindow.webContents.send('scan-progress', progress);
+        mainWindow.webContents.send('scan-progress', { driveId, ...progress });
       }
     });
   } catch (err) {
@@ -148,7 +148,7 @@ ipcMain.handle('clear-drive-files', async (event, driveId) => {
   }
 });
 
-// NEW: Select Folder Dialog
+// Select Folder Dialog
 ipcMain.handle('select-folder', async (event) => {
   try {
     console.log('[IPC] select-folder');
@@ -168,6 +168,19 @@ ipcMain.handle('select-folder', async (event) => {
     return selectedPath;
   } catch (err) {
     console.error('[IPC] Error in select-folder:', err);
+    throw err;
+  }
+});
+
+// NEW: Show file in Explorer
+ipcMain.handle('show-in-folder', async (event, filePath) => {
+  try {
+    console.log('[IPC] show-in-folder:', filePath);
+    // shell.showItemInFolder opens Explorer/Finder and highlights the file
+    shell.showItemInFolder(filePath);
+    return { success: true };
+  } catch (err) {
+    console.error('[IPC] Error in show-in-folder:', err);
     throw err;
   }
 });

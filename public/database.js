@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 const { app } = require('electron');
 const { v4: uuidv4 } = require('uuid');
 
@@ -117,189 +118,163 @@ class Database {
     });
   }
 
-  scanDrive(driveId, drivePath, progressCallback) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        console.log('[Database] Starting scan of:', drivePath);
+  async scanDrive(driveId, drivePath, progressCallback) {
+    try {
+      console.log('[Database] Starting async scan of:', drivePath);
+      
+      // Validate the path
+      if (!drivePath || typeof drivePath !== 'string') {
+        throw new Error('Invalid drive path');
+      }
+
+      // Normalize path
+      let normalizedPath = drivePath.trim().replace(/\\/g, '/');
+      console.log('[Database] Normalized path:', normalizedPath);
+
+      // Check if path exists (sync check is OK for validation)
+      if (!fsSync.existsSync(normalizedPath)) {
+        throw new Error(`Path does not exist: ${normalizedPath}`);
+      }
+
+      console.log('[Database] Path exists, clearing old files...');
+      await this.clearDriveFiles(driveId);
+
+      const scannedAt = new Date().toISOString();
+      let fileCount = 0;
+      let totalSize = 0;
+      const fileBatch = [];
+      const BATCH_SIZE = 100;
+
+      const getFileCategory = (ext) => {
+        const categoryMap = {
+          '.aep': 'After Effects Project',
+          '.prproj': 'Premiere Pro Project',
+          '.psd': 'Photoshop',
+          '.psb': 'Photoshop',
+          '.abr': 'Photoshop Brush',
+          '.atn': 'Photoshop Action',
+          '.mp4': 'Video',
+          '.mov': 'Video',
+          '.avi': 'Video',
+          '.mkv': 'Video',
+          '.wav': 'Audio',
+          '.mp3': 'Audio',
+          '.jpg': 'Image',
+          '.jpeg': 'Image',
+          '.png': 'Image',
+          '.ai': 'Vector',
+          '.pdf': 'Document',
+          '.ttf': 'Font',
+          '.otf': 'Font',
+        };
+        return categoryMap[ext.toLowerCase()] || 'Other';
+      };
+
+      const insertBatch = async () => {
+        if (fileBatch.length === 0) return;
         
-        // Validate the path
-        if (!drivePath || typeof drivePath !== 'string') {
-          throw new Error('Invalid drive path');
-        }
-
-        // Normalize path
-        let normalizedPath = drivePath.trim();
-        // Convert backslashes to forward slashes for consistency
-        normalizedPath = normalizedPath.replace(/\\/g, '/');
-        console.log('[Database] Normalized path:', normalizedPath);
-
-        // Check if path exists
-        if (!fs.existsSync(normalizedPath)) {
-          throw new Error(`Path does not exist: ${normalizedPath}`);
-        }
-
-        console.log('[Database] Path exists, clearing old files...');
-        // Clear old files for this drive
-        await this.clearDriveFiles(driveId);
-
-        const scannedAt = new Date().toISOString();
-        let fileCount = 0;
-        let totalSize = 0;
-        let processedCount = 0;
-        let errorCount = 0;
-
-        const getFileCategory = (ext) => {
-          const categoryMap = {
-            '.aep': 'After Effects Project',
-            '.prproj': 'Premiere Pro Project',
-            '.psd': 'Photoshop',
-            '.psb': 'Photoshop',
-            '.abr': 'Photoshop Brush',
-            '.atn': 'Photoshop Action',
-            '.acv': 'Photoshop Curve',
-            '.ase': 'Adobe Swatch',
-            '.mp4': 'Video',
-            '.mov': 'Video',
-            '.avi': 'Video',
-            '.mkv': 'Video',
-            '.prores': 'Video',
-            '.m4v': 'Video',
-            '.wav': 'Audio',
-            '.mp3': 'Audio',
-            '.aiff': 'Audio',
-            '.aac': 'Audio',
-            '.flac': 'Audio',
-            '.jpg': 'Image',
-            '.jpeg': 'Image',
-            '.png': 'Image',
-            '.tiff': 'Image',
-            '.tif': 'Image',
-            '.ai': 'Vector',
-            '.eps': 'Vector',
-            '.pdf': 'Document',
-            '.doc': 'Document',
-            '.docx': 'Document',
-            '.ttf': 'Font',
-            '.otf': 'Font',
-            '.txt': 'Text',
-          };
-          return categoryMap[ext.toLowerCase()] || 'Other';
-        };
-
-        const scanDirectory = (dir, callback) => {
-          fs.readdir(dir, { withFileTypes: true }, (err, files) => {
-            if (err) {
-              console.warn('[Database] Error reading directory', dir, ':', err.message);
-              errorCount++;
-              callback();
-              return;
-            }
-
-            let pending = files.length;
-            if (pending === 0) {
-              callback();
-              return;
-            }
-
-            files.forEach((file) => {
-              try {
-                const fullPath = path.join(dir, file.name);
-                const relativePath = path.relative(normalizedPath, fullPath);
-
-                if (file.isDirectory()) {
-                  // Skip system directories
-                  if (file.name.startsWith('.') || file.name === 'System Volume Information' || file.name === '$RECYCLE.BIN') {
-                    pending--;
-                    if (pending === 0) callback();
-                  } else {
-                    scanDirectory(fullPath, () => {
-                      pending--;
-                      if (pending === 0) callback();
-                    });
-                  }
-                } else {
-                  try {
-                    const stats = fs.statSync(fullPath);
-                    const ext = path.extname(file.name);
-                    const category = getFileCategory(ext);
-                    const fileId = uuidv4();
-
-                    this.db.run(
-                      `INSERT INTO files (id, driveId, fileName, filePath, fileSize, fileType, category, modifiedAt, scannedAt)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                      [
-                        fileId,
-                        driveId,
-                        file.name,
-                        relativePath,
-                        stats.size,
-                        ext,
-                        category,
-                        stats.mtime.toISOString(),
-                        scannedAt,
-                      ],
-                      (err) => {
-                        if (!err) {
-                          fileCount++;
-                          totalSize += stats.size;
-                          processedCount++;
-                          if (processedCount % 100 === 0) {
-                            console.log('[Database] Scan progress:', fileCount, 'files');
-                            progressCallback({ fileCount, status: `Scanned ${fileCount} files...` });
-                          }
-                        }
-                        pending--;
-                        if (pending === 0) callback();
-                      }
-                    );
-                  } catch (e) {
-                    console.warn('[Database] Error processing file', file.name, ':', e.message);
-                    errorCount++;
-                    pending--;
-                    if (pending === 0) callback();
-                  }
-                }
-              } catch (e) {
-                console.warn('[Database] Error in forEach:', e.message);
-                errorCount++;
-                pending--;
-                if (pending === 0) callback();
-              }
-            });
-          });
-        };
-
-        console.log('[Database] Starting directory scan...');
-        scanDirectory(normalizedPath, () => {
-          console.log('[Database] Directory scan complete, updating drive stats...');
-          // Update drive stats
-          const lastScanned = new Date().toISOString();
+        return new Promise((resolve, reject) => {
+          const placeholders = fileBatch.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?)').join(',');
+          const values = fileBatch.flat();
+          
           this.db.run(
-            `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ? WHERE id = ?`,
-            [fileCount, totalSize, lastScanned, driveId],
+            `INSERT INTO files (id, driveId, fileName, filePath, fileSize, fileType, category, modifiedAt, scannedAt) VALUES ${placeholders}`,
+            values,
             (err) => {
-              if (err) {
-                console.error('[Database] Error updating drive stats:', err);
-                reject(err);
-              } else {
-                console.log('[Database] Scan complete! Files:', fileCount, 'Errors:', errorCount);
-                progressCallback({ fileCount, status: 'Scan complete!' });
-                resolve({ fileCount, totalSize, lastScanned });
-              }
+              if (err) reject(err);
+              else resolve();
             }
           );
         });
-      } catch (err) {
-        console.error('[Database] Error in scanDrive:', err);
-        reject(err);
+      };
+
+      const scanDirectoryAsync = async (dir) => {
+        try {
+          const entries = await fs.readdir(dir, { withFileTypes: true });
+          
+          for (const entry of entries) {
+            try {
+              const fullPath = path.join(dir, entry.name);
+              
+              if (entry.isDirectory()) {
+                // Skip system directories
+                if (!entry.name.startsWith('.') && entry.name !== 'System Volume Information' && entry.name !== '$RECYCLE.BIN') {
+                  await scanDirectoryAsync(fullPath);
+                }
+              } else {
+                const stats = await fs.stat(fullPath);
+                const ext = path.extname(entry.name);
+                const category = getFileCategory(ext);
+                const relativePath = path.relative(normalizedPath, fullPath);
+                
+                fileBatch.push([
+                  uuidv4(),
+                  driveId,
+                  entry.name,
+                  relativePath,
+                  stats.size,
+                  ext,
+                  category,
+                  stats.mtime.toISOString(),
+                  scannedAt,
+                ]);
+                
+                fileCount++;
+                totalSize += stats.size;
+                
+                if (fileBatch.length >= BATCH_SIZE) {
+                  await insertBatch();
+                  fileBatch.length = 0;
+                  console.log('[Database] Progress:', fileCount, 'files');
+                  progressCallback({ driveId, fileCount, status: `Scanned ${fileCount} files...` });
+                }
+              }
+            } catch (err) {
+              console.warn('[Database] Error processing entry:', entry.name, err.message);
+            }
+          }
+        } catch (err) {
+          console.warn('[Database] Error reading directory:', dir, err.message);
+        }
+      };
+
+      console.log('[Database] Starting async directory scan...');
+      await scanDirectoryAsync(normalizedPath);
+      
+      // Insert remaining files
+      if (fileBatch.length > 0) {
+        await insertBatch();
       }
-    });
+
+      console.log('[Database] Scan complete, updating drive stats...');
+      
+      // Update drive stats
+      const lastScanned = new Date().toISOString();
+      await new Promise((resolve, reject) => {
+        this.db.run(
+          `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ? WHERE id = ?`,
+          [fileCount, totalSize, lastScanned, driveId],
+          (err) => {
+            if (err) reject(err);
+            else resolve();
+          }
+        );
+      });
+
+      console.log('[Database] Async scan complete! Files:', fileCount);
+      progressCallback({ driveId, fileCount, status: 'Scan complete!' });
+      return { fileCount, totalSize, lastScanned };
+      
+    } catch (err) {
+      console.error('[Database] Error in async scanDrive:', err);
+      throw err;
+    }
   }
 
   searchFiles(query, filters = {}) {
     return new Promise((resolve, reject) => {
       let sql = `
-        SELECT f.*, d.name as driveName, d.description as driveDescription
+        SELECT f.*, d.name as driveName
         FROM files f
         JOIN drives d ON f.driveId = d.id
         WHERE 1=1
@@ -311,7 +286,7 @@ class Database {
         params.push(`%${query}%`);
       }
 
-      if (filters.category && filters.category !== 'All') {
+      if (filters.category) {
         sql += ` AND f.category = ?`;
         params.push(filters.category);
       }
@@ -319,11 +294,6 @@ class Database {
       if (filters.driveId) {
         sql += ` AND f.driveId = ?`;
         params.push(filters.driveId);
-      }
-
-      if (filters.fileType) {
-        sql += ` AND f.fileType = ?`;
-        params.push(filters.fileType);
       }
 
       sql += ` ORDER BY f.fileName ASC LIMIT 1000`;
