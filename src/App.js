@@ -7,7 +7,8 @@ import SearchPanel from './components/SearchPanel';
 function App() {
   const [drives, setDrives] = useState([]);
   const [selectedDrive, setSelectedDrive] = useState(null);
-  const [scanning, setScanning] = useState(false);
+  const [scanningDrives, setScanningDrives] = useState(new Set());
+  const [scanProgress, setScanProgress] = useState({});
   const [searchResults, setSearchResults] = useState([]);
   const [activeTab, setActiveTab] = useState('drives');
   const [error, setError] = useState('');
@@ -15,6 +16,16 @@ function App() {
   useEffect(() => {
     console.log('[App] Initializing...');
     loadDrives();
+    
+    // Listen for scan progress updates
+    if (window.api?.onScanProgress) {
+      window.api.onScanProgress((data) => {
+        setScanProgress(prev => ({
+          ...prev,
+          [data.driveId]: data
+        }));
+      });
+    }
   }, []);
 
   const loadDrives = async () => {
@@ -44,6 +55,11 @@ function App() {
   };
 
   const handleDeleteDrive = async (driveId) => {
+    if (scanningDrives.has(driveId)) {
+      alert('Cannot delete a drive while it is being scanned.');
+      return;
+    }
+    
     if (window.confirm('Are you sure? This will remove the drive and all its indexed files.')) {
       try {
         console.log('[App] Deleting drive:', driveId);
@@ -59,19 +75,38 @@ function App() {
   };
 
   const handleScanDrive = async (driveId, drivePath) => {
-    console.log('[App] Starting scan:', drivePath);
-    setScanning(true);
+    if (scanningDrives.has(driveId)) {
+      alert('This drive is already being scanned.');
+      return;
+    }
+    
+    console.log('[App] Starting background scan:', drivePath);
+    setScanningDrives(prev => new Set(prev).add(driveId));
     setError('');
+    
     try {
       console.log('[App] Calling API to scan...');
       const result = await window.api.scanDrive(driveId, drivePath);
       console.log('[App] Scan completed, reloading drives...');
       await loadDrives();
-      setScanning(false);
+      setScanningDrives(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(driveId);
+        return newSet;
+      });
+      setScanProgress(prev => {
+        const newProgress = { ...prev };
+        delete newProgress[driveId];
+        return newProgress;
+      });
       alert(`Scan complete! Indexed ${result.fileCount} files.`);
     } catch (err) {
       console.error('[App] Error scanning drive:', err);
-      setScanning(false);
+      setScanningDrives(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(driveId);
+        return newSet;
+      });
       setError('Error scanning drive: ' + err.message);
       alert('Error scanning drive: ' + err.message);
     }
@@ -95,6 +130,11 @@ function App() {
       <header className="app-header">
         <h1>🎬 Drive Indexer</h1>
         <p>Find your creative assets across all drives</p>
+        {scanningDrives.size > 0 && (
+          <div className="scanning-indicator">
+            🔄 {scanningDrives.size} drive{scanningDrives.size > 1 ? 's' : ''} scanning in background...
+          </div>
+        )}
       </header>
 
       {error && (
@@ -135,12 +175,15 @@ function App() {
                 onSelectDrive={setSelectedDrive}
                 onAddDrive={handleAddDrive}
                 onDeleteDrive={handleDeleteDrive}
+                scanningDrives={scanningDrives}
+                scanProgress={scanProgress}
               />
               {selectedDrive && (
                 <Scanner
                   drive={selectedDrive}
                   onScan={handleScanDrive}
-                  scanning={scanning}
+                  scanning={scanningDrives.has(selectedDrive.id)}
+                  progress={scanProgress[selectedDrive.id]}
                 />
               )}
             </div>

@@ -1,118 +1,136 @@
 .app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background: #f5f5f5;
 }
 
 .app-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 30px 20px;
+  padding: 30px 40px;
   text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 32px;
+  font-weight: 700;
 }
 
 .app-header p {
   margin: 8px 0 0 0;
   opacity: 0.9;
+  font-size: 16px;
+}
+
+.scanning-indicator {
+  margin-top: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
   font-size: 14px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .app-container {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .app-nav {
-  background: white;
-  border-right: 2px solid #ddd;
-  padding: 10px;
   display: flex;
-  flex-direction: column;
-  width: 150px;
-  gap: 5px;
+  gap: 10px;
+  margin-bottom: 20px;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button {
-  padding: 12px 10px;
+  flex: 1;
+  padding: 12px 20px;
   border: none;
   background: transparent;
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
   color: #666;
 }
 
 .nav-button:hover {
-  background: #f0f0f0;
+  background: #f5f5f5;
+  color: #333;
 }
 
 .nav-button.active {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
 .app-content {
-  flex: 1;
-  overflow-y: auto;
   background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 500px;
 }
 
 .tab-content {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
 }
 
 .button {
-  padding: 10px 16px;
+  padding: 10px 20px;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: all 0.3s;
-  text-decoration: none;
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .button.primary {
-  background: #667eea;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
 }
 
-.button.primary:hover:not(:disabled) {
-  background: #5568d3;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+.button.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .button.secondary {
-  background: #e0e0e0;
+  background: #f0f0f0;
   color: #333;
 }
 
-.button.secondary:hover:not(:disabled) {
-  background: #d0d0d0;
+.button.secondary:hover {
+  background: #e0e0e0;
 }
 
 .button.danger {
-  background: #ff6b6b;
+  background: #ff4444;
   color: white;
 }
 
-.button.danger:hover:not(:disabled) {
-  background: #ee5a52;
+.button.danger:hover {
+  background: #cc0000;
 }
 
 .button.small {
@@ -120,12 +138,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 768px) {
-  .app-nav {
-    width: 100px;
-  }
-
-  .drives-grid {
-    grid-template-columns: 1fr;
-  }
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

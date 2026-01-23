@@ -1,16 +1,16 @@
 .drive-list-container {
-  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .drive-list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
 }
 
 .drive-list-header h2 {
-  font-size: 24px;
+  margin: 0;
   color: #333;
 }
 
@@ -20,77 +20,103 @@
   gap: 20px;
 }
 
-.drive-card {
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.drive-card:hover {
-  border-color: #4a90e2;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.drive-card.selected {
-  border-color: #4a90e2;
-  background: #f0f7ff;
-}
-
-.drive-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: start;
-  margin-bottom: 10px;
-}
-
-.drive-card-header h3 {
-  font-size: 18px;
-  color: #333;
-  margin: 0;
-  flex: 1;
-}
-
-.drive-description {
-  color: #666;
-  font-size: 14px;
-  margin: 8px 0;
-  padding: 8px;
-  background: #f9f9f9;
-  border-radius: 4px;
-}
-
-.drive-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
-}
-
-.stat {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-}
-
-.stat-label {
-  color: #666;
-  font-weight: 500;
-}
-
-.stat-value {
-  color: #333;
-  font-weight: bold;
-}
-
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
   padding: 60px 20px;
   color: #999;
   font-size: 16px;
+}
+
+.drive-card {
+  background: #f9f9f9;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.drive-card:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.drive-card.selected {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.drive-card.scanning {
+  border-color: #ff9800;
+  background: #fff8e1;
+  animation: scanning-pulse 2s ease-in-out infinite;
+}
+
+@keyframes scanning-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(255, 152, 0, 0);
+  }
+}
+
+.drive-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.drive-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.drive-description {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 12px 0;
+}
+
+.scanning-badge {
+  background: #ff9800;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.drive-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
 }
