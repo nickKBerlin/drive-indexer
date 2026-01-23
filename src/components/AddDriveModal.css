@@ -4,26 +4,84 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
   background: white;
-  border-radius: 8px;
-  padding: 30px;
-  max-width: 500px;
+  border-radius: 12px;
+  padding: 0;
   width: 90%;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow: hidden;
 }
 
-.modal-content h2 {
-  margin-top: 0;
-  margin-bottom: 20px;
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+  background: #f9f9f9;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
   color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.close-button:hover {
+  background: #eee;
+  color: #333;
+}
+
+.modal-content form {
+  padding: 24px;
 }
 
 .form-group {
@@ -35,16 +93,19 @@
   margin-bottom: 8px;
   font-weight: 600;
   color: #333;
+  font-size: 14px;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: inherit;
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
   font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .form-group input:focus,
@@ -54,10 +115,15 @@
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
 }
 
+.form-group textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
 .form-group small {
   display: block;
   margin-top: 6px;
-  color: #999;
+  color: #666;
   font-size: 12px;
 }
 
@@ -65,9 +131,9 @@
   background: #fee;
   border: 1px solid #fcc;
   color: #c33;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
   font-size: 14px;
 }
 
@@ -75,5 +141,10 @@
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 25px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.modal-actions button {
+  min-width: 100px;
 }

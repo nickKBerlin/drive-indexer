@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './AddDriveModal.css';
 
 function AddDriveModal({ onAdd, onClose, existingNames }) {
   const [driveName, setDriveName] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+  const inputRef = useRef(null);
+
+  // Auto-focus the input when modal opens
+  useEffect(() => {
+    if (inputRef.current) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 100);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,37 +26,51 @@ function AddDriveModal({ onAdd, onClose, existingNames }) {
       return;
     }
 
-    if (existingNames.includes(driveName)) {
+    if (existingNames.includes(driveName.trim())) {
       setError('A drive with this name already exists');
       return;
     }
 
     onAdd({
-      name: driveName,
-      description: description,
+      name: driveName.trim(),
+      description: description.trim(),
     });
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Add New Drive</h2>
+        <div className="modal-header">
+          <h2>📀 Add New Drive</h2>
+          <button 
+            className="close-button" 
+            onClick={onClose}
+            type="button"
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Drive Name *</label>
+            <label htmlFor="drive-name">Drive Name *</label>
             <input
+              id="drive-name"
+              ref={inputRef}
               type="text"
               value={driveName}
               onChange={(e) => setDriveName(e.target.value)}
               placeholder="e.g., Red External 4TB - Projects"
               maxLength="50"
+              autoComplete="off"
             />
             <small>Must be unique. This helps identify which physical drive you need.</small>
           </div>
 
           <div className="form-group">
-            <label>Description (Optional)</label>
+            <label htmlFor="drive-description">Description (Optional)</label>
             <textarea
+              id="drive-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Contains all After Effects projects from 2024-2025"
@@ -53,14 +78,14 @@ function AddDriveModal({ onAdd, onClose, existingNames }) {
             />
           </div>
 
-          {error && <div className="error-message">{error}</div>}
+          {error && <div className="error-message">⚠️ {error}</div>}
 
           <div className="modal-actions">
             <button type="button" className="button secondary" onClick={onClose}>
               Cancel
             </button>
             <button type="submit" className="button primary">
-              Add Drive
+              ✅ Add Drive
             </button>
           </div>
         </form>
