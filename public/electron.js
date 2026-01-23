@@ -2,6 +2,7 @@ const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
+const { dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const Database = require('./database');
@@ -143,6 +144,30 @@ ipcMain.handle('clear-drive-files', async (event, driveId) => {
     return await db.clearDriveFiles(driveId);
   } catch (err) {
     console.error('[IPC] Error in clear-drive-files:', err);
+    throw err;
+  }
+});
+
+// NEW: Select Folder Dialog
+ipcMain.handle('select-folder', async (event) => {
+  try {
+    console.log('[IPC] select-folder');
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openDirectory'],
+      title: 'Select a Folder to Index',
+      defaultPath: process.env.USERPROFILE || process.env.HOME,
+    });
+    
+    if (result.canceled) {
+      console.log('[IPC] Folder selection canceled');
+      return null;
+    }
+    
+    const selectedPath = result.filePaths[0];
+    console.log('[IPC] Selected folder:', selectedPath);
+    return selectedPath;
+  } catch (err) {
+    console.error('[IPC] Error in select-folder:', err);
     throw err;
   }
 });
