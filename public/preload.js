@@ -9,5 +9,6 @@ contextBridge.exposeInMainWorld('api', {
   searchFiles: (query, filters) => ipcRenderer.invoke('search-files', query, filters),
   getFileStats: (driveId) => ipcRenderer.invoke('get-file-stats', driveId),
   clearDriveFiles: (driveId) => ipcRenderer.invoke('clear-drive-files', driveId),
+  selectFolder: () => ipcRenderer.invoke('select-folder'),
   onScanProgress: (callback) => ipcRenderer.on('scan-progress', (event, data) => callback(data)),
 });
