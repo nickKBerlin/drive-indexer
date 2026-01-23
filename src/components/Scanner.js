@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Scanner.css';
 
 function Scanner({ drive, onScan, scanning }) {
@@ -7,24 +7,36 @@ function Scanner({ drive, onScan, scanning }) {
 
   const handleBrowsePath = async () => {
     try {
-      // For development: use a test path
-      // In production, use electron's dialog
-      const testPath = 'D:/'; // Change this to test
-      setDrivePath(testPath);
+      console.log('[Scanner] Browsing for path...');
+      if (window.api && window.api.selectFolder) {
+        const selectedPath = await window.api.selectFolder();
+        if (selectedPath) {
+          console.log('[Scanner] Selected path:', selectedPath);
+          setDrivePath(selectedPath);
+        }
+      } else {
+        alert('Folder browser not available. Please enter path manually.');
+      }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('[Scanner] Error browsing:', err);
+      alert('Error opening folder browser: ' + err.message);
     }
   };
 
   const handleScan = () => {
     if (!drivePath) {
-      alert('Please select a drive path');
+      alert('Please select or enter a drive path');
       return;
     }
+    if (!drive || !drive.id) {
+      alert('Error: Drive not properly selected. Please select the drive again.');
+      return;
+    }
+    console.log('[Scanner] Starting scan with drive ID:', drive.id, 'path:', drivePath);
     onScan(drive.id, drivePath);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleProgress = (data) => {
       setScanProgress(data.status);
     };
@@ -33,13 +45,12 @@ function Scanner({ drive, onScan, scanning }) {
       window.api.onScanProgress(handleProgress);
     }
     
-    // No cleanup needed for this listener
     return () => {};
   }, []);
 
   return (
     <div className="scanner-panel">
-      <h3>Scan {drive.name}</h3>
+      <h3>🔍 Scan {drive?.name || 'Drive'}</h3>
       <div className="scanner-form">
         <div className="form-group">
           <label>Drive Path</label>
@@ -48,22 +59,28 @@ function Scanner({ drive, onScan, scanning }) {
               type="text"
               value={drivePath}
               onChange={(e) => setDrivePath(e.target.value)}
-              placeholder="e.g., E:/ or /Volumes/ExternalDrive"
+              placeholder="e.g., D:/ or G:/ or \\\\SERVER\\Share"
               disabled={scanning}
+              className="path-input"
             />
             <button
               type="button"
               className="button secondary"
               onClick={handleBrowsePath}
               disabled={scanning}
+              title="Click to browse for a folder"
             >
-              Browse
+              📁 Browse
             </button>
           </div>
-          <small>Enter the root path of the drive you want to scan</small>
+          <small>Enter the path (e.g., D:/ or \\\\WDMYCLOUDMIRROR\\Public) or click Browse</small>
         </div>
 
-        {scanProgress && <div className="scan-progress">{scanProgress}</div>}
+        {scanProgress && (
+          <div className="scan-progress">
+            <span className="progress-text">{scanProgress}</span>
+          </div>
+        )}
 
         <button
           type="button"
@@ -71,7 +88,7 @@ function Scanner({ drive, onScan, scanning }) {
           onClick={handleScan}
           disabled={scanning || !drivePath}
         >
-          {scanning ? '🔄 Scanning...' : '🔍 Start Scan'}
+          {scanning ? '🔄 Scanning...' : '▶ Start Scan'}
         </button>
       </div>
     </div>
