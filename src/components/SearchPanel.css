@@ -171,6 +171,32 @@
   white-space: nowrap;
 }
 
+.actions-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.action-button {
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 2px;
+}
+
+.action-button:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
 .no-results {
   text-align: center;
   padding: 40px 20px;

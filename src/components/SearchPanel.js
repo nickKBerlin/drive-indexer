@@ -7,6 +7,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [copiedId, setCopiedId] = useState(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -41,6 +42,16 @@ function SearchPanel({ drives, onSearch, results }) {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     return new Date(dateString).toLocaleDateString();
+  };
+
+  const copyToClipboard = async (text, fileId) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(fileId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      alert('Failed to copy: ' + err.message);
+    }
   };
 
   const sortedResults = [...results].sort((a, b) => {
@@ -153,6 +164,7 @@ function SearchPanel({ drives, onSearch, results }) {
                     Modified {sortBy === 'modifiedAt' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </th>
                   <th>Path</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,6 +184,15 @@ function SearchPanel({ drives, onSearch, results }) {
                     </td>
                     <td className="file-date">{formatDate(file.modifiedAt)}</td>
                     <td className="file-path" title={file.filePath}>{file.filePath}</td>
+                    <td className="actions-cell">
+                      <button
+                        className="action-button"
+                        onClick={() => copyToClipboard(file.filePath, file.id)}
+                        title="Copy path to clipboard"
+                      >
+                        {copiedId === file.id ? '✅' : '📋'}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
