@@ -170,25 +170,81 @@ class Database {
 
       const getFileCategory = (ext) => {
         const categoryMap = {
+          // Images
+          '.jpg': 'Image (JPEG)',
+          '.jpeg': 'Image (JPEG)',
+          '.png': 'Image (PNG)',
+          '.tiff': 'Image (TIFF)',
+          '.tif': 'Image (TIFF)',
+          '.gif': 'Image (GIF)',
+          '.webp': 'Image (WebP)',
+          '.bmp': 'Image (BMP)',
+          '.svg': 'Vector (SVG)',
+          '.raw': 'Image (RAW)',
+          '.cr2': 'Image (RAW)',
+          '.nef': 'Image (RAW)',
+          '.arw': 'Image (RAW)',
+          '.dng': 'Image (RAW)',
+          
+          // Adobe Creative
           '.aep': 'After Effects Project',
           '.prproj': 'Premiere Pro Project',
           '.psd': 'Photoshop',
           '.psb': 'Photoshop',
+          '.ai': 'Illustrator',
           '.abr': 'Photoshop Brush',
           '.atn': 'Photoshop Action',
-          '.mp4': 'Video',
-          '.mov': 'Video',
-          '.avi': 'Video',
-          '.mkv': 'Video',
-          '.wav': 'Audio',
-          '.mp3': 'Audio',
-          '.jpg': 'Image',
-          '.jpeg': 'Image',
-          '.png': 'Image',
-          '.ai': 'Vector',
-          '.pdf': 'Document',
-          '.ttf': 'Font',
-          '.otf': 'Font',
+          '.acv': 'Photoshop Curve',
+          '.ase': 'Adobe Swatch',
+          
+          // Video
+          '.mp4': 'Video (MP4)',
+          '.mov': 'Video (MOV)',
+          '.avi': 'Video (AVI)',
+          '.mkv': 'Video (MKV)',
+          '.prores': 'Video (ProRes)',
+          '.m4v': 'Video (M4V)',
+          '.mxf': 'Video (Professional)',
+          '.dnxhd': 'Video (Professional)',
+          
+          // Audio
+          '.wav': 'Audio (WAV)',
+          '.mp3': 'Audio (MP3)',
+          '.aiff': 'Audio (AIFF)',
+          '.aac': 'Audio (AAC)',
+          '.flac': 'Audio (FLAC)',
+          '.m4a': 'Audio (M4A)',
+          
+          // 3D Models
+          '.blend': '3D Model (Blender)',
+          '.fbx': '3D Model (FBX)',
+          '.obj': '3D Model (OBJ)',
+          '.c4d': '3D Model (Cinema 4D)',
+          '.ma': '3D Model (Maya)',
+          '.mb': '3D Model (Maya)',
+          '.gltf': '3D Model (glTF)',
+          '.glb': '3D Model (glTF)',
+          '.stl': '3D Model (STL)',
+          '.3ds': '3D Model (3DS)',
+          
+          // Archives
+          '.zip': 'Archive (ZIP)',
+          '.rar': 'Archive (RAR)',
+          '.7z': 'Archive (7-Zip)',
+          '.tar': 'Archive (TAR)',
+          '.gz': 'Archive (GZIP)',
+          
+          // Documents
+          '.pdf': 'Document (PDF)',
+          '.doc': 'Document (Word)',
+          '.docx': 'Document (Word)',
+          '.xls': 'Document (Excel)',
+          '.xlsx': 'Document (Excel)',
+          '.txt': 'Document (Text)',
+          
+          // Fonts
+          '.ttf': 'Font (TrueType)',
+          '.otf': 'Font (OpenType)',
         };
         return categoryMap[ext.toLowerCase()] || 'Other';
       };
@@ -309,14 +365,18 @@ class Database {
         params.push(`%${query}%`);
       }
 
-      if (filters.category) {
-        sql += ` AND f.category = ?`;
-        params.push(filters.category);
+      // Multi-category filter
+      if (filters.categories && filters.categories.length > 0) {
+        const placeholders = filters.categories.map(() => '?').join(',');
+        sql += ` AND f.category IN (${placeholders})`;
+        params.push(...filters.categories);
       }
 
-      if (filters.driveId) {
-        sql += ` AND f.driveId = ?`;
-        params.push(filters.driveId);
+      // Multi-drive filter
+      if (filters.driveIds && filters.driveIds.length > 0) {
+        const placeholders = filters.driveIds.map(() => '?').join(',');
+        sql += ` AND f.driveId IN (${placeholders})`;
+        params.push(...filters.driveIds);
       }
 
       sql += ` ORDER BY f.fileName ASC LIMIT 1000`;

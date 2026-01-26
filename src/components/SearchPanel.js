@@ -4,33 +4,63 @@ import DriveLetterModal from './DriveLetterModal';
 
 function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
-  const [selectedDrive, setSelectedDrive] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedDrives, setSelectedDrives] = useState(new Set(drives.map(d => d.id)));
+  const [selectedCategories, setSelectedCategories] = useState(new Set());
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
   const [actionedId, setActionedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
 
+  // Update selected drives when drives list changes
+  React.useEffect(() => {
+    setSelectedDrives(new Set(drives.map(d => d.id)));
+  }, [drives]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     onSearch(query, {
-      driveId: selectedDrive === 'all' ? null : selectedDrive,
-      category: selectedCategory === 'all' ? null : selectedCategory,
+      driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
+      categories: selectedCategories.size > 0 ? Array.from(selectedCategories) : null,
     });
   };
 
-  const categories = [
+  const availableCategories = [
+    'Image (JPEG)',
+    'Image (PNG)',
+    'Image (TIFF)',
+    'Image (GIF)',
+    'Image (WebP)',
+    'Image (RAW)',
+    'Vector (SVG)',
+    'Video (MP4)',
+    'Video (MOV)',
+    'Video (AVI)',
+    'Video (ProRes)',
+    'Video (Professional)',
+    'Audio (WAV)',
+    'Audio (MP3)',
+    'Audio (AIFF)',
+    'Audio (FLAC)',
+    '3D Model (Blender)',
+    '3D Model (FBX)',
+    '3D Model (OBJ)',
+    '3D Model (Cinema 4D)',
+    '3D Model (glTF)',
     'After Effects Project',
     'Premiere Pro Project',
     'Photoshop',
+    'Illustrator',
     'Photoshop Brush',
     'Photoshop Action',
-    'Video',
-    'Audio',
-    'Image',
-    'Font',
-    'Document',
+    'Archive (ZIP)',
+    'Archive (RAR)',
+    'Archive (7-Zip)',
+    'Document (PDF)',
+    'Document (Word)',
+    'Document (Excel)',
+    'Font (TrueType)',
+    'Font (OpenType)',
     'Other',
   ];
 
@@ -89,7 +119,6 @@ function SearchPanel({ drives, onSearch, results }) {
       console.log('[SearchPanel] Drive letter entered:', driveLetter);
       console.log('[SearchPanel] File path:', selectedFile.filePath);
       
-      // Clean up drive letter and construct full path
       const cleanLetter = driveLetter.trim().toUpperCase().replace(':', '');
       const fullPath = `${cleanLetter}:\\${selectedFile.filePath.replace(/\//g, '\\')}`;
       
@@ -110,9 +139,44 @@ function SearchPanel({ drives, onSearch, results }) {
   };
 
   const handleCancelModal = () => {
-    console.log('[SearchPanel] Modal canceled');
     setShowModal(false);
     setSelectedFile(null);
+  };
+
+  const toggleDrive = (driveId) => {
+    const newSelected = new Set(selectedDrives);
+    if (newSelected.has(driveId)) {
+      newSelected.delete(driveId);
+    } else {
+      newSelected.add(driveId);
+    }
+    setSelectedDrives(newSelected);
+  };
+
+  const toggleAllDrives = () => {
+    if (selectedDrives.size === drives.length) {
+      setSelectedDrives(new Set());
+    } else {
+      setSelectedDrives(new Set(drives.map(d => d.id)));
+    }
+  };
+
+  const toggleCategory = (category) => {
+    const newSelected = new Set(selectedCategories);
+    if (newSelected.has(category)) {
+      newSelected.delete(category);
+    } else {
+      newSelected.add(category);
+    }
+    setSelectedCategories(newSelected);
+  };
+
+  const toggleAllCategories = () => {
+    if (selectedCategories.size === availableCategories.length) {
+      setSelectedCategories(new Set());
+    } else {
+      setSelectedCategories(new Set(availableCategories));
+    }
   };
 
   const sortedResults = [...results].sort((a, b) => {
@@ -175,29 +239,56 @@ function SearchPanel({ drives, onSearch, results }) {
           </button>
         </div>
 
-        <div className="filter-group">
-          <div className="filter">
-            <label>Drive:</label>
-            <select value={selectedDrive} onChange={(e) => setSelectedDrive(e.target.value)}>
-              <option value="all">All Drives</option>
+        <div className="filter-container">
+          <div className="filter-section">
+            <h4>Search Drives:</h4>
+            <div className="checkbox-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedDrives.size === drives.length}
+                  onChange={toggleAllDrives}
+                />
+                <strong>All Drives</strong>
+              </label>
+              <hr className="filter-divider" />
               {drives.map((drive) => (
-                <option key={drive.id} value={drive.id}>
+                <label key={drive.id} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedDrives.has(drive.id)}
+                    onChange={() => toggleDrive(drive.id)}
+                  />
                   {drive.name}
-                </option>
+                  <span className="file-count">({drive.fileCount || 0} files)</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
 
-          <div className="filter">
-            <label>Category:</label>
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-              <option value="all">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+          <div className="filter-section">
+            <h4>Categories:</h4>
+            <div className="checkbox-group scrollable">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.size === 0}
+                  onChange={toggleAllCategories}
+                />
+                <strong>All Categories</strong>
+              </label>
+              <hr className="filter-divider" />
+              {availableCategories.map((category) => (
+                <label key={category} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.has(category)}
+                    onChange={() => toggleCategory(category)}
+                  />
+                  {category}
+                </label>
               ))}
-            </select>
+            </div>
           </div>
         </div>
       </form>
