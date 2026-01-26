@@ -46,26 +46,37 @@ function SearchPanel({ drives, onSearch, results }) {
 
   const showInFolder = async (file, fileId) => {
     try {
-      // Need to get the drive's actual current path
-      const drive = drives.find(d => d.name === file.driveName);
-      if (!drive) {
-        const driveLetter = prompt(
-          `Enter the current drive letter for "${file.driveName}"\n\nFile: ${file.fileName}\nOriginal path: ${file.filePath}`,
-          'G'
-        );
-        if (!driveLetter) return;
-        
-        const fullPath = `${driveLetter}:/${file.filePath}`.replace(/\//g, '\\');
-        await window.api.showInFolder(fullPath);
-      } else {
-        // If we have drive info, construct the path
-        const fullPath = file.filePath.replace(/\//g, '\\');
-        await window.api.showInFolder(fullPath);
+      console.log('[SearchPanel] Show in folder clicked');
+      console.log('[SearchPanel] File:', file.fileName);
+      console.log('[SearchPanel] Relative path:', file.filePath);
+      console.log('[SearchPanel] Drive name:', file.driveName);
+      
+      // Always ask for drive letter since we only store relative paths
+      const driveLetter = prompt(
+        `Enter the current drive letter for "${file.driveName}"\n\n` +
+        `File: ${file.fileName}\n` +
+        `Path: ${file.filePath}\n\n` +
+        `Example: Enter "G" for G:/`,
+        'G'
+      );
+      
+      if (!driveLetter) {
+        console.log('[SearchPanel] User canceled');
+        return;
       }
+      
+      // Clean up drive letter and construct full path
+      const cleanLetter = driveLetter.trim().toUpperCase().replace(':', '');
+      const fullPath = `${cleanLetter}:\\${file.filePath.replace(/\//g, '\\')}`;
+      
+      console.log('[SearchPanel] Full path constructed:', fullPath);
+      
+      await window.api.showInFolder(fullPath);
       
       setActionedId(fileId);
       setTimeout(() => setActionedId(null), 2000);
     } catch (err) {
+      console.error('[SearchPanel] Error showing in folder:', err);
       alert('Could not open folder: ' + err.message);
     }
   };
