@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './SearchPanel.css';
+import DriveLetterModal from './DriveLetterModal';
 
 function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
@@ -8,6 +9,8 @@ function SearchPanel({ drives, onSearch, results }) {
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
   const [actionedId, setActionedId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -44,41 +47,41 @@ function SearchPanel({ drives, onSearch, results }) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const showInFolder = async (file, fileId) => {
+  const showInFolder = (file) => {
+    console.log('[SearchPanel] Opening modal for file:', file.fileName);
+    setSelectedFile(file);
+    setShowModal(true);
+  };
+
+  const handleConfirmDriveLetter = async (driveLetter) => {
     try {
-      console.log('[SearchPanel] Show in folder clicked');
-      console.log('[SearchPanel] File:', file.fileName);
-      console.log('[SearchPanel] Relative path:', file.filePath);
-      console.log('[SearchPanel] Drive name:', file.driveName);
-      
-      // Always ask for drive letter since we only store relative paths
-      const driveLetter = prompt(
-        `Enter the current drive letter for "${file.driveName}"\n\n` +
-        `File: ${file.fileName}\n` +
-        `Path: ${file.filePath}\n\n` +
-        `Example: Enter "G" for G:/`,
-        'G'
-      );
-      
-      if (!driveLetter) {
-        console.log('[SearchPanel] User canceled');
-        return;
-      }
+      console.log('[SearchPanel] Drive letter entered:', driveLetter);
+      console.log('[SearchPanel] File path:', selectedFile.filePath);
       
       // Clean up drive letter and construct full path
       const cleanLetter = driveLetter.trim().toUpperCase().replace(':', '');
-      const fullPath = `${cleanLetter}:\\${file.filePath.replace(/\//g, '\\')}`;
+      const fullPath = `${cleanLetter}:\\${selectedFile.filePath.replace(/\//g, '\\')}`;
       
       console.log('[SearchPanel] Full path constructed:', fullPath);
       
       await window.api.showInFolder(fullPath);
       
-      setActionedId(fileId);
+      setActionedId(selectedFile.id);
       setTimeout(() => setActionedId(null), 2000);
+      setShowModal(false);
+      setSelectedFile(null);
     } catch (err) {
       console.error('[SearchPanel] Error showing in folder:', err);
       alert('Could not open folder: ' + err.message);
+      setShowModal(false);
+      setSelectedFile(null);
     }
+  };
+
+  const handleCancelModal = () => {
+    console.log('[SearchPanel] Modal canceled');
+    setShowModal(false);
+    setSelectedFile(null);
   };
 
   const sortedResults = [...results].sort((a, b) => {
@@ -214,7 +217,7 @@ function SearchPanel({ drives, onSearch, results }) {
                     <td className="actions-cell">
                       <button
                         className="action-button"
-                        onClick={() => showInFolder(file, file.id)}
+                        onClick={() => showInFolder(file)}
                         title="Show file in Explorer"
                       >
                         {actionedId === file.id ? '✅' : '📂'}
@@ -230,6 +233,14 @@ function SearchPanel({ drives, onSearch, results }) {
 
       {query && results.length === 0 && (
         <div className="no-results">No files found matching your search.</div>
+      )}
+
+      {showModal && selectedFile && (
+        <DriveLetterModal
+          file={selectedFile}
+          onConfirm={handleConfirmDriveLetter}
+          onCancel={handleCancelModal}
+        />
       )}
     </div>
   );
