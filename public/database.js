@@ -21,6 +21,7 @@ class Database {
           id TEXT PRIMARY KEY,
           name TEXT NOT NULL UNIQUE,
           description TEXT,
+          scanPath TEXT,
           lastScanned TEXT,
           fileCount INTEGER DEFAULT 0,
           totalSize INTEGER DEFAULT 0,
@@ -248,12 +249,12 @@ class Database {
 
       console.log('[Database] Scan complete, updating drive stats...');
       
-      // Update drive stats
+      // Update drive stats AND store scanPath
       const lastScanned = new Date().toISOString();
       await new Promise((resolve, reject) => {
         this.db.run(
-          `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ? WHERE id = ?`,
-          [fileCount, totalSize, lastScanned, driveId],
+          `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ?, scanPath = ? WHERE id = ?`,
+          [fileCount, totalSize, lastScanned, normalizedPath, driveId],
           (err) => {
             if (err) reject(err);
             else resolve();
@@ -261,7 +262,7 @@ class Database {
         );
       });
 
-      console.log('[Database] Async scan complete! Files:', fileCount);
+      console.log('[Database] Async scan complete! Files:', fileCount, 'Path stored:', normalizedPath);
       progressCallback({ driveId, fileCount, status: 'Scan complete!' });
       return { fileCount, totalSize, lastScanned };
       
@@ -274,7 +275,7 @@ class Database {
   searchFiles(query, filters = {}) {
     return new Promise((resolve, reject) => {
       let sql = `
-        SELECT f.*, d.name as driveName
+        SELECT f.*, d.name as driveName, d.scanPath as driveScanPath
         FROM files f
         JOIN drives d ON f.driveId = d.id
         WHERE 1=1

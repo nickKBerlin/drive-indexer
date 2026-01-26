@@ -47,10 +47,41 @@ function SearchPanel({ drives, onSearch, results }) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const showInFolder = (file) => {
-    console.log('[SearchPanel] Opening modal for file:', file.fileName);
-    setSelectedFile(file);
-    setShowModal(true);
+  const showInFolder = async (file) => {
+    try {
+      console.log('[SearchPanel] Show in folder clicked');
+      console.log('[SearchPanel] File:', file.fileName);
+      console.log('[SearchPanel] Scan path from DB:', file.driveScanPath);
+      
+      // Smart detection: Check if we have scanPath and if it still exists
+      if (file.driveScanPath) {
+        console.log('[SearchPanel] Checking if path exists:', file.driveScanPath);
+        const pathExists = await window.api.checkPathExists(file.driveScanPath);
+        
+        if (pathExists) {
+          console.log('[SearchPanel] Path exists! Opening directly...');
+          // Direct open - no modal needed!
+          const fullPath = `${file.driveScanPath}/${file.filePath}`.replace(/\//g, '\\');
+          console.log('[SearchPanel] Full path:', fullPath);
+          
+          await window.api.showInFolder(fullPath);
+          
+          setActionedId(file.id);
+          setTimeout(() => setActionedId(null), 2000);
+          return;
+        } else {
+          console.log('[SearchPanel] Path no longer exists, showing modal...');
+        }
+      }
+      
+      // Fallback: Show modal
+      console.log('[SearchPanel] Opening modal for manual input');
+      setSelectedFile(file);
+      setShowModal(true);
+    } catch (err) {
+      console.error('[SearchPanel] Error showing in folder:', err);
+      alert('Could not open folder: ' + err.message);
+    }
   };
 
   const handleConfirmDriveLetter = async (driveLetter) => {

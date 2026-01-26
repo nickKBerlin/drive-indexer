@@ -4,6 +4,7 @@ const BrowserWindow = electron.BrowserWindow;
 const ipcMain = electron.ipcMain;
 const { dialog, shell } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const isDev = require('electron-is-dev');
 const Database = require('./database');
 
@@ -172,15 +173,27 @@ ipcMain.handle('select-folder', async (event) => {
   }
 });
 
-// NEW: Show file in Explorer
+// Show file in Explorer
 ipcMain.handle('show-in-folder', async (event, filePath) => {
   try {
     console.log('[IPC] show-in-folder:', filePath);
-    // shell.showItemInFolder opens Explorer/Finder and highlights the file
     shell.showItemInFolder(filePath);
     return { success: true };
   } catch (err) {
     console.error('[IPC] Error in show-in-folder:', err);
     throw err;
+  }
+});
+
+// Check if path exists
+ipcMain.handle('check-path-exists', async (event, checkPath) => {
+  try {
+    console.log('[IPC] check-path-exists:', checkPath);
+    const exists = fs.existsSync(checkPath);
+    console.log('[IPC] Path exists:', exists);
+    return exists;
+  } catch (err) {
+    console.error('[IPC] Error in check-path-exists:', err);
+    return false;
   }
 });
