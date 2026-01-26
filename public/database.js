@@ -29,6 +29,28 @@ class Database {
         )
       `);
 
+      // Migration: Add scanPath column if it doesn't exist
+      this.db.all(`PRAGMA table_info(drives)`, (err, columns) => {
+        if (err) {
+          console.error('[Database] Error checking columns:', err);
+          return;
+        }
+        
+        const hasScanPath = columns.some(col => col.name === 'scanPath');
+        if (!hasScanPath) {
+          console.log('[Database] ✨ Adding scanPath column (database migration)...');
+          this.db.run(`ALTER TABLE drives ADD COLUMN scanPath TEXT`, (err) => {
+            if (err) {
+              console.error('[Database] Error adding scanPath column:', err);
+            } else {
+              console.log('[Database] ✅ scanPath column added successfully!');
+            }
+          });
+        } else {
+          console.log('[Database] ✅ scanPath column already exists');
+        }
+      });
+
       // Files table
       this.db.run(`
         CREATE TABLE IF NOT EXISTS files (
