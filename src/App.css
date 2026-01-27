@@ -1,36 +1,71 @@
+/* ============================================
+   DARK MODE COLOR SCHEME
+   ============================================ */
+
+:root {
+  /* Dark Mode Colors */
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #252525;
+  --bg-hover: #303030;
+  
+  --text-primary: #e8e8e8;
+  --text-secondary: #a8a8a8;
+  --text-muted: #707070;
+  
+  /* Gradient Button Colors */
+  --gradient-scan: linear-gradient(135deg, #ff8c42 0%, #ff6b35 100%);
+  --gradient-rescan: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  --gradient-delete: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
 .app {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
+
+/* ============================================
+   HEADER
+   ============================================ */
 
 .app-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 30px 40px;
   text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 32px;
   font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .app-header p {
   margin: 8px 0 0 0;
-  opacity: 0.9;
+  opacity: 0.95;
   font-size: 16px;
 }
 
 .scanning-indicator {
   margin-top: 12px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
   padding: 8px 16px;
   border-radius: 20px;
   display: inline-block;
   font-size: 14px;
   animation: pulse 2s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @keyframes pulse {
@@ -42,6 +77,10 @@
   }
 }
 
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
 .app-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -52,10 +91,11 @@
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  background: white;
+  background: var(--bg-secondary);
   padding: 10px;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--bg-tertiary);
 }
 
 .nav-button {
@@ -67,26 +107,32 @@
   font-size: 16px;
   font-weight: 500;
   border-radius: 6px;
-  transition: all 0.2s;
-  color: #666;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
 }
 
 .nav-button:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .nav-button.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+/* ============================================
+   CONTENT AREA
+   ============================================ */
+
 .app-content {
-  background: white;
+  background: var(--bg-secondary);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
   min-height: 500px;
+  border: 1px solid var(--bg-tertiary);
 }
 
 .tab-content {
@@ -95,6 +141,10 @@
   gap: 20px;
 }
 
+/* ============================================
+   BUTTONS - GENERAL
+   ============================================ */
+
 .button {
   padding: 10px 20px;
   border: none;
@@ -102,43 +152,136 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-}
-
-.button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.button.primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.button.secondary {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.button.secondary:hover {
-  background: #e0e0e0;
-}
-
-.button.danger {
-  background: #ff4444;
-  color: white;
-}
-
-.button.danger:hover {
-  background: #cc0000;
-}
-
-.button.small {
-  padding: 6px 12px;
-  font-size: 12px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ============================================
+   BUTTON VARIANTS
+   ============================================ */
+
+/* PRIMARY BUTTON */
+.button.primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.button.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.button.primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* SCAN BUTTON - ORANGE GRADIENT */
+.button.scan {
+  background: var(--gradient-scan);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 140, 66, 0.3);
+}
+
+.button.scan:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4);
+}
+
+.button.scan:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* RESCAN BUTTON - CYAN GRADIENT */
+.button.rescan {
+  background: var(--gradient-rescan);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.button.rescan:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 212, 255, 0.4);
+}
+
+.button.rescan:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* DELETE BUTTON - RED GRADIENT */
+.button.danger {
+  background: var(--gradient-delete);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.button.danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+}
+
+.button.danger:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* SECONDARY BUTTON */
+.button.secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-hover);
+}
+
+.button.secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--text-secondary);
+}
+
+/* SMALL BUTTON */
+.button.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* ============================================
+   ERROR MESSAGE
+   ============================================ */
+
+.error-message {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  color: #ff8888;
+  padding: 12px 16px;
+  margin: 10px 0;
+  border-radius: 6px;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-hover);
 }
