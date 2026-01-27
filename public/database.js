@@ -141,6 +141,37 @@ class Database {
     });
   }
 
+  // Helper function to check if file/folder should be skipped
+  shouldSkipEntry(name) {
+    // macOS junk files and folders
+    const macOSJunk = [
+      '__MACOSX',           // Mac archive metadata folder
+      '.DS_Store',          // Mac folder settings
+      '.Spotlight-V100',    // Spotlight search index
+      '.Trashes',           // Mac trash
+      '.fseventsd',         // Mac file system events
+      '.TemporaryItems',    // Mac temp files
+      '.DocumentRevisions-V100', // Mac document versions
+    ];
+
+    // Check exact matches
+    if (macOSJunk.includes(name)) {
+      return true;
+    }
+
+    // Check if file starts with ._ (Mac resource fork)
+    if (name.startsWith('._')) {
+      return true;
+    }
+
+    // Windows junk files
+    if (name === 'Thumbs.db' || name === 'desktop.ini') {
+      return true;
+    }
+
+    return false;
+  }
+
   async scanDrive(driveId, drivePath, progressCallback) {
     try {
       console.log('[Database] Starting async scan of:', drivePath);
@@ -165,6 +196,7 @@ class Database {
       const scannedAt = new Date().toISOString();
       let fileCount = 0;
       let totalSize = 0;
+      let skippedCount = 0;
       const fileBatch = [];
       const BATCH_SIZE = 100;
 
@@ -273,6 +305,12 @@ class Database {
           
           for (const entry of entries) {
             try {
+              // Skip macOS and Windows junk files
+              if (this.shouldSkipEntry(entry.name)) {
+                skippedCount++;
+                continue;
+              }
+
               const fullPath = path.join(dir, entry.name);
               
               if (entry.isDirectory()) {
@@ -304,7 +342,7 @@ class Database {
                 if (fileBatch.length >= BATCH_SIZE) {
                   await insertBatch();
                   fileBatch.length = 0;
-                  console.log('[Database] Progress:', fileCount, 'files');
+                  console.log('[Database] Progress:', fileCount, 'files,', skippedCount, 'skipped');
                   progressCallback({ driveId, fileCount, status: `Scanned ${fileCount} files...` });
                 }
               }
@@ -325,7 +363,8 @@ class Database {
         await insertBatch();
       }
 
-      console.log('[Database] Scan complete, updating drive stats...');
+      console.log('[Database] Scan complete! Files:', fileCount, 'Skipped junk files:', skippedCount);
+      console.log('[Database] Updating drive stats...');
       
       // Update drive stats AND store scanPath
       const lastScanned = new Date().toISOString();
@@ -340,7 +379,7 @@ class Database {
         );
       });
 
-      console.log('[Database] Async scan complete! Files:', fileCount, 'Path stored:', normalizedPath);
+      console.log('[Database] ✅ Scan complete! Indexed:', fileCount, 'files | Filtered out:', skippedCount, 'junk files');
       progressCallback({ driveId, fileCount, status: 'Scan complete!' });
       return { fileCount, totalSize, lastScanned };
       
