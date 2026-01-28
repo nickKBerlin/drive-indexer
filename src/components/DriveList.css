@@ -1,5 +1,5 @@
 /* ============================================
-   DRIVE LIST CONTAINER
+   DRIVE LIST STYLING
    ============================================ */
 
 .drive-list-container {
@@ -11,283 +11,158 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--bg-tertiary);
 }
 
 .drive-list-header h2 {
-  margin: 0;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 600;
-  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-/* ============================================
-   DRIVES TABLE LAYOUT
-   ============================================ */
+.drive-list-header h2::before {
+  content: '📁';
+  font-size: 24px;
+}
 
 .drives-table {
   width: 100%;
   border-collapse: collapse;
+  background: #181818;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  border: 1px solid #252525;
 }
 
 .drives-table thead {
-  background: var(--bg-tertiary);
-  border-bottom: 2px solid var(--bg-hover);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .drives-table th {
-  padding: 14px 16px;
+  padding: 16px 20px;
   text-align: left;
   font-weight: 600;
-  color: var(--text-secondary);
   font-size: 13px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  user-select: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.drives-table th:last-child {
+  border-right: none;
 }
 
 .drives-table tbody tr {
-  border-bottom: 1px solid var(--bg-tertiary);
-  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #252525;
+  transition: background-color 0.2s ease;
 }
 
 .drives-table tbody tr:hover {
-  background: var(--bg-tertiary);
+  background: #1f1f1f;
+}
+
+.drives-table tbody tr:last-child {
+  border-bottom: none;
 }
 
 .drives-table td {
-  padding: 14px 16px;
-  color: var(--text-primary);
+  padding: 16px 20px;
+  vertical-align: middle;
   font-size: 14px;
 }
 
-/* ============================================
-   TABLE COLUMN STYLING
-   ============================================ */
-
-/* Drive Name Column */
-.drive-name-cell {
+.drive-name {
   display: flex;
   align-items: center;
   gap: 12px;
   font-weight: 500;
-  max-width: 200px;
+  color: #e8e8e8;
 }
 
 .drive-icon {
-  font-size: 18px;
+  font-size: 20px;
 }
 
-.drive-info-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.drive-info-group .drive-name {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.drive-info-group .drive-description {
-  color: var(--text-muted);
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-/* Status Indicator */
-.status-indicator {
+.drive-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.status-indicator.connected {
-  color: #4ade80;
-}
-
-.status-indicator.offline {
-  color: var(--text-muted);
+  gap: 8px;
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  display: inline-block;
+  background: #00d4ff;
+  box-shadow: 0 0 8px #00d4ff;
 }
 
-.status-dot.connected {
-  background: #4ade80;
-  box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
+.status-text {
+  font-size: 13px;
+  color: #00d4ff;
 }
 
-.status-dot.offline {
-  background: var(--text-muted);
-}
-
-/* Size Cell */
-.size-cell {
-  font-family: 'Courier New', monospace;
-  color: var(--text-secondary);
-}
-
-/* Free Space Progress Bar */
-.free-space-cell {
-  min-width: 150px;
-}
-
-.progress-bar-container {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.progress-bar {
-  width: 100%;
+.free-space-bar {
+  width: 150px;
   height: 6px;
-  background: var(--bg-tertiary);
+  background: rgba(102, 126, 234, 0.2);
   border-radius: 3px;
   overflow: hidden;
-  position: relative;
 }
 
-.progress-bar-fill {
+.free-space-fill {
   height: 100%;
   background: linear-gradient(90deg, #00d4ff 0%, #0099cc 100%);
   border-radius: 3px;
-  transition: width 0.3s ease;
-  box-shadow: 0 0 8px rgba(0, 212, 255, 0.4);
 }
 
-.progress-bar-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  display: flex;
-  justify-content: space-between;
-}
-
-/* Date Column */
-.date-cell {
-  color: var(--text-secondary);
-  font-size: 13px;
-}
-
-.date-cell.never-scanned {
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-/* Actions Column */
-.actions-cell {
-  text-align: right;
-}
-
-.button-group {
+.drive-actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-}
-
-/* Scanning Row Style */
-.drives-table tbody tr.scanning {
-  background: rgba(255, 140, 66, 0.08);
-  border-left: 3px solid var(--gradient-scan);
-}
-
-.drives-table tbody tr.scanning:hover {
-  background: rgba(255, 140, 66, 0.12);
-}
-
-.scanning-badge {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 140, 66, 0.15);
-  color: #ff8c42;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  animation: pulse-scan 1.5s ease-in-out infinite;
 }
-
-@keyframes pulse-scan {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-/* ============================================
-   EMPTY STATE
-   ============================================ */
 
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-  color: var(--text-muted);
   text-align: center;
+  padding: 60px 20px;
+  color: #707070;
 }
 
-.empty-state p {
-  margin: 0;
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state-text {
   font-size: 16px;
+  margin-bottom: 24px;
 }
 
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 1024px) {
-  .drives-table th,
-  .drives-table td {
-    padding: 12px 12px;
-    font-size: 13px;
-  }
-
-  .drive-name-cell {
-    max-width: 150px;
-  }
-
-  .button-group {
-    gap: 4px;
-  }
+/* Scan progress indicator */
+.scan-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00d4ff;
+  font-size: 12px;
 }
 
-@media (max-width: 768px) {
-  .drive-list-header {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
+.progress-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-top: 2px solid #00d4ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
 
-  .drive-list-header h2 {
-    width: 100%;
-  }
-
-  .drive-list-header .button {
-    width: 100%;
-  }
-
-  /* Stack table on mobile */
-  .drives-table {
-    font-size: 12px;
-  }
-
-  .drives-table th,
-  .drives-table td {
-    padding: 10px 8px;
-  }
-
-  .drive-name-cell {
-    max-width: 120px;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
