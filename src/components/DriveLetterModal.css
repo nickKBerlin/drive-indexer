@@ -1,134 +1,86 @@
-.modal-overlay {
+/* ============================================
+   DRIVE LETTER MODAL STYLING
+   ============================================ */
+
+.drive-letter-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(4px);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.drive-letter-modal-content {
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 450px;
   width: 90%;
-  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
   animation: slideUp 0.3s ease;
 }
 
 @keyframes slideUp {
   from {
-    transform: translateY(20px);
     opacity: 0;
+    transform: translateY(20px);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #eee;
+.drive-letter-modal-header {
+  margin-bottom: 24px;
 }
 
-.modal-header h3 {
+.drive-letter-modal-header h2 {
   margin: 0;
-  color: #333;
-  font-size: 18px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #999;
-  cursor: pointer;
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.modal-close:hover {
-  background: #f0f0f0;
-  color: #333;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-info {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.modal-info strong {
-  color: #333;
-  display: inline-block;
-  min-width: 60px;
-}
-
-.file-path {
-  padding: 10px;
-  background: #f9f9f9;
-  border-radius: 4px;
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  word-break: break-all;
-}
-
-.drive-letter-input-group {
-  margin-top: 24px;
-}
-
-.drive-letter-input-group label {
-  display: block;
-  margin-bottom: 8px;
+  font-size: 20px;
   font-weight: 600;
-  color: #333;
-  font-size: 14px;
-}
-
-.input-with-suffix {
+  color: #e8e8e8;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 12px;
+}
+
+.drive-letter-modal-header h2::before {
+  content: '💾';
+  font-size: 20px;
+}
+
+.drive-letter-modal-body {
+  margin-bottom: 24px;
+}
+
+.drive-letter-modal-body p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #a8a8a8;
+  line-height: 1.6;
 }
 
 .drive-letter-input {
-  width: 60px;
-  padding: 12px;
-  font-size: 24px;
-  text-align: center;
-  border: 2px solid #ddd;
+  width: 100%;
+  padding: 12px 14px;
+  background: #252525;
+  border: 1px solid #303030;
   border-radius: 6px;
-  font-weight: bold;
+  color: #e8e8e8;
+  font-size: 16px;
+  font-weight: 600;
   text-transform: uppercase;
-  transition: border-color 0.3s;
+  text-align: center;
+  letter-spacing: 2px;
+  transition: all 0.2s ease;
 }
 
 .drive-letter-input:focus {
@@ -137,23 +89,40 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.input-suffix {
-  font-size: 24px;
-  font-weight: bold;
-  color: #666;
-}
-
-.input-hint {
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: #999;
-  font-style: italic;
-}
-
-.modal-footer {
+.drive-letter-modal-buttons {
   display: flex;
+  gap: 12px;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 20px;
-  border-top: 1px solid #eee;
+}
+
+.drive-letter-modal-button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.drive-letter-modal-button.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.drive-letter-modal-button.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.drive-letter-modal-button.secondary {
+  background: #252525;
+  color: #a8a8a8;
+  border: 1px solid #303030;
+}
+
+.drive-letter-modal-button.secondary:hover {
+  background: #303030;
+  color: #e8e8e8;
 }
