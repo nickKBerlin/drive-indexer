@@ -1,9 +1,9 @@
 /* ============================================
-   SCANNER / ADD DRIVE STYLING
+   SCANNER / ADD DRIVE STYLING - DARK THEME
    ============================================ */
 
 .scanner-container {
-  margin-bottom: 30px;
+  margin-bottom: 0;
 }
 
 .add-drive-button {
@@ -11,24 +11,41 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--accent-orange);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  white-space: nowrap;
 }
 
 .add-drive-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
+  filter: brightness(1.1);
+}
+
+.add-drive-button:active {
+  transform: translateY(0);
 }
 
 .add-drive-button::before {
   content: '+';
   font-size: 18px;
   font-weight: 700;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .add-drive-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
 }
