@@ -1,5 +1,5 @@
 /* ============================================
-   DRIVE LETTER MODAL STYLING
+   DRIVE LETTER MODAL STYLING - DARK THEME
    ============================================ */
 
 .drive-letter-modal-overlay {
@@ -8,22 +8,32 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .drive-letter-modal-content {
-  background: #1a1a1a;
-  border: 1px solid #252525;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 32px;
   max-width: 450px;
   width: 90%;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow-xl);
   animation: slideUp 0.3s ease;
 }
 
@@ -46,14 +56,14 @@
   margin: 0;
   font-size: 20px;
   font-weight: 600;
-  color: #e8e8e8;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
 .drive-letter-modal-header h2::before {
-  content: '💾';
+  content: '📄';
   font-size: 20px;
 }
 
@@ -64,29 +74,34 @@
 .drive-letter-modal-body p {
   margin: 0 0 16px 0;
   font-size: 14px;
-  color: #a8a8a8;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
 .drive-letter-input {
   width: 100%;
-  padding: 12px 14px;
-  background: #252525;
-  border: 1px solid #303030;
-  border-radius: 6px;
-  color: #e8e8e8;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 14px 16px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--accent-teal);
+  font-size: 18px;
+  font-weight: 700;
   text-transform: uppercase;
   text-align: center;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
   transition: all 0.2s ease;
+}
+
+.drive-letter-input::placeholder {
+  color: var(--text-muted);
 }
 
 .drive-letter-input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--accent-teal);
+  background: var(--bg-secondary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
 }
 
 .drive-letter-modal-buttons {
@@ -98,31 +113,65 @@
 .drive-letter-modal-button {
   padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
 }
 
 .drive-letter-modal-button.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--accent-teal);
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
 }
 
 .drive-letter-modal-button.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
+  filter: brightness(1.1);
+}
+
+.drive-letter-modal-button.primary:active {
+  transform: translateY(0);
 }
 
 .drive-letter-modal-button.secondary {
-  background: #252525;
-  color: #a8a8a8;
-  border: 1px solid #303030;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
 }
 
 .drive-letter-modal-button.secondary:hover {
-  background: #303030;
-  color: #e8e8e8;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .drive-letter-modal-content {
+    padding: 24px;
+    max-width: 90vw;
+  }
+
+  .drive-letter-modal-header h2 {
+    font-size: 18px;
+  }
+
+  .drive-letter-modal-buttons {
+    flex-direction: column;
+  }
+
+  .drive-letter-modal-button {
+    width: 100%;
+    justify-content: center;
+  }
 }
