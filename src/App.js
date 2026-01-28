@@ -12,7 +12,6 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [activeTab, setActiveTab] = useState('drives');
   const [error, setError] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     console.log('[App] Initializing...');
@@ -115,8 +114,7 @@ function App() {
 
   const handleSearch = async (query, filters) => {
     try {
-      setIsSearching(true);
-      console.log('[App] Searching:', query);
+      console.log('[App] Searching:', query, filters);
       const results = await window.api.searchFiles(query, filters);
       console.log('[App] Found', results.length, 'results');
       setSearchResults(results);
@@ -124,8 +122,6 @@ function App() {
     } catch (err) {
       console.error('[App] Error searching:', err);
       setError('Error searching: ' + err.message);
-    } finally {
-      setIsSearching(false);
     }
   };
 
@@ -170,9 +166,8 @@ function App() {
 
           <div className={`tab-content ${activeTab === 'search' ? 'active' : ''}`}>
             <SearchPanel
-              onSearch={handleSearch}
               drives={drives}
-              isLoading={isSearching}
+              onSearch={handleSearch}
               results={searchResults}
             />
           </div>
