@@ -12,18 +12,16 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [activeTab, setActiveTab] = useState('drives');
   const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     console.log('[App] Initializing...');
     loadDrives();
-    
+
     // Listen for scan progress updates
     if (window.api?.onScanProgress) {
       window.api.onScanProgress((data) => {
-        setScanProgress(prev => ({
-          ...prev,
-          [data.driveId]: data
-        }));
+        setScanProgress(prev => ({ ...prev, [data.driveId]: data }));
       });
     }
   }, []);
@@ -59,7 +57,7 @@ function App() {
       alert('Cannot delete a drive while it is being scanned.');
       return;
     }
-    
+
     if (window.confirm('Are you sure? This will remove the drive and all its indexed files.')) {
       try {
         console.log('[App] Deleting drive:', driveId);
@@ -79,26 +77,29 @@ function App() {
       alert('This drive is already being scanned.');
       return;
     }
-    
+
     console.log('[App] Starting background scan:', drivePath);
     setScanningDrives(prev => new Set(prev).add(driveId));
     setError('');
-    
+
     try {
       console.log('[App] Calling API to scan...');
       const result = await window.api.scanDrive(driveId, drivePath);
       console.log('[App] Scan completed, reloading drives...');
       await loadDrives();
+
       setScanningDrives(prev => {
         const newSet = new Set(prev);
         newSet.delete(driveId);
         return newSet;
       });
+
       setScanProgress(prev => {
         const newProgress = { ...prev };
         delete newProgress[driveId];
         return newProgress;
       });
+
       alert(`Scan complete! Indexed ${result.fileCount} files.`);
     } catch (err) {
       console.error('[App] Error scanning drive:', err);
@@ -114,6 +115,7 @@ function App() {
 
   const handleSearch = async (query, filters) => {
     try {
+      setIsSearching(true);
       console.log('[App] Searching:', query);
       const results = await window.api.searchFiles(query, filters);
       console.log('[App] Found', results.length, 'results');
@@ -122,80 +124,58 @@ function App() {
     } catch (err) {
       console.error('[App] Error searching:', err);
       setError('Error searching: ' + err.message);
+    } finally {
+      setIsSearching(false);
     }
   };
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>🎬 Drive Indexer</h1>
-        <p>Find your creative assets across all drives</p>
-        {scanningDrives.size > 0 && (
-          <div className="scanning-indicator">
-            🔄 {scanningDrives.size} drive{scanningDrives.size > 1 ? 's' : ''} scanning in background...
-          </div>
-        )}
-      </header>
-
-      {error && (
-        <div style={{
-          background: '#fee',
-          border: '1px solid #fcc',
-          color: '#c33',
-          padding: '10px 20px',
-          margin: '10px',
-          borderRadius: '4px'
-        }}>
-          {error}
-        </div>
-      )}
-
-      <div className="app-container">
-        <nav className="app-nav">
+      <div className="app-header">
+        <h1>Drive Indexer</h1>
+        {error && <div className="error-message">{error}</div>}
+        
+        <div className="app-nav">
           <button
             className={`nav-button ${activeTab === 'drives' ? 'active' : ''}`}
             onClick={() => setActiveTab('drives')}
           >
-            📁 Drives ({drives.length})
+            Drives
           </button>
           <button
             className={`nav-button ${activeTab === 'search' ? 'active' : ''}`}
             onClick={() => setActiveTab('search')}
           >
-            🔍 Search
+            Search
           </button>
-        </nav>
+        </div>
+      </div>
 
+      <div className="app-container">
         <div className="app-content">
-          {activeTab === 'drives' && (
-            <div className="tab-content">
-              <DriveList
-                drives={drives}
-                selectedDrive={selectedDrive}
-                onSelectDrive={setSelectedDrive}
-                onAddDrive={handleAddDrive}
-                onDeleteDrive={handleDeleteDrive}
-                scanningDrives={scanningDrives}
-                scanProgress={scanProgress}
-              />
-              {selectedDrive && (
-                <Scanner
-                  drive={selectedDrive}
-                  onScan={handleScanDrive}
-                  scanning={scanningDrives.has(selectedDrive.id)}
-                  progress={scanProgress[selectedDrive.id]}
-                />
-              )}
+          <div className={`tab-content ${activeTab === 'drives' ? 'active' : ''}`}>
+            <div className="drives-header">
+              <Scanner drives={drives} onAddDrive={handleAddDrive} />
             </div>
-          )}
-
-          {activeTab === 'search' && (
-            <SearchPanel
+            <DriveList
               drives={drives}
+              selectedDrive={selectedDrive}
+              onSelectDrive={setSelectedDrive}
+              scanningDrives={scanningDrives}
+              scanProgress={scanProgress}
+              onScanDrive={handleScanDrive}
+              onDeleteDrive={handleDeleteDrive}
+            />
+          </div>
+
+          <div className={`tab-content ${activeTab === 'search' ? 'active' : ''}`}>
+            <SearchPanel
               onSearch={handleSearch}
+              drives={drives}
+              isLoading={isSearching}
               results={searchResults}
             />
-          )}
+          </div>
         </div>
       </div>
     </div>
