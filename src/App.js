@@ -125,6 +125,8 @@ function App() {
     }
   };
 
+  const isSelectedDriveScanning = selectedDrive && scanningDrives.has(selectedDrive.id);
+
   return (
     <div className="app">
       <div className="app-header">
@@ -151,7 +153,11 @@ function App() {
         <div className="app-content">
           <div className={`tab-content ${activeTab === 'drives' ? 'active' : ''}`}>
             <div className="drives-header">
-              <Scanner drives={drives} onAddDrive={handleAddDrive} />
+              <Scanner
+                drive={selectedDrive}
+                onScan={handleScanDrive}
+                scanning={!!isSelectedDriveScanning}
+              />
             </div>
             <DriveList
               drives={drives}
@@ -161,6 +167,7 @@ function App() {
               scanProgress={scanProgress}
               onScanDrive={handleScanDrive}
               onDeleteDrive={handleDeleteDrive}
+              onAddDrive={handleAddDrive}
             />
           </div>
 
