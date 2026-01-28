@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive Indexer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d0d0d;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        /* CSS Variables for theming */
+        :root {
+            --bg-dark: #0d0d0d;
+            --header-bg: #1a1a1a;
+            --row-dark: #1f1f1f;
+            --row-light: #282828;
+            --row-selected: #303030;
+            --row-hover: #2f2f2f;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --text-title: #666666;
+            --accent-turquoise: #2dd4bf;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --free-space-gradient: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            --transition-fast: 150ms ease-out;
+            --transition-normal: 200ms ease-out;
+        }
+
+        /* Layout */
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg-dark);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, var(--header-bg) 0%, #161616 100%);
+            padding: 20px 24px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-title);
+            letter-spacing: 0.5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 24px;
+        }
+
+        .tab {
+            padding: 8px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+            position: relative;
+            font-weight: 400;
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--text-primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--text-primary);
+            border-radius: 1px;
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            overflow: auto;
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Drives Section */
+        .drives-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .drives-title {
+            font-size: 16px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .btn-add {
+            padding: 8px 16px;
+            background: #4a4a4a;
+            color: #888888;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background var(--transition-fast);
+        }
+
+        .btn-add:hover {
+            background: #555555;
+            color: #aaaaaa;
+        }
+
+        /* Table */
+        .table-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 160px 100px 80px 90px 100px 90px 110px 150px;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--row-dark);
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-header-cell {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+
+        .table-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 160px 100px 80px 90px 100px 90px 110px 150px;
+            gap: 12px;
+            padding: 12px 16px;
+            align-items: center;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .table-row:nth-child(odd) {
+            background: var(--row-dark);
+        }
+
+        .table-row:nth-child(even) {
+            background: var(--row-light);
+        }
+
+        .table-row:hover {
+            background: var(--row-hover);
+        }
+
+        .table-row.selected {
+            background: var(--row-selected);
+        }
+
+        .table-row.selected:hover {
+            background: var(--row-selected);
+        }
+
+        .cell {
+            font-size: 13px;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cell-editable {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-primary);
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: text;
+            font-size: 13px;
+            font-family: inherit;
+            transition: border-color var(--transition-fast);
+        }
+
+        .cell-editable:hover {
+            border-color: #444444;
+        }
+
+        .cell-editable:focus {
+            outline: none;
+            border-color: #666666;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .drive-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drive-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            background: #444444;
+            flex-shrink: 0;
+        }
+
+        .btn-scan {
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .btn-scan:hover {
+            background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
+            transform: translateY(-1px);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #3a3a3a;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--free-space-gradient);
+            border-radius: 2px;
+            transition: width var(--transition-normal);
+        }
+
+        /* Bottom Controls */
+        .controls-bottom {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 16px 24px;
+            gap: 12px;
+            border-top: 1px solid #2a2a2a;
+            background: linear-gradient(180deg, transparent 0%, rgba(26, 26, 26, 0.5) 100%);
+        }
+
+        .btn-remove {
+            padding: 8px 16px;
+            background: #4a4a4a;
+            color: #888888;
+            border: none;
+            border-radius: 6px;
+            cursor: not-allowed;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all var(--transition-normal);
+            box-shadow: none;
+        }
+
+        .btn-remove.active {
+            background: var(--accent-red);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-remove.active:hover {
+            background: #dc2626;
+            box-shadow: 0 0 28px rgba(239, 68, 68, 0.6);
+        }
+
+        .btn-remove.active:active {
+            transform: scale(0.98);
+        }
+
+        /* Scrollbar */
+        .table-body::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .table-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .table-body::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+
+        .table-body::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <h1 class="title">Drive Indexer</h1>
+            </div>
+            <div class="tabs">
+                <button class="tab active" data-tab="drives">Drives</button>
+                <button class="tab" data-tab="search">Search</button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Drives Tab -->
+            <div class="tab-content active" id="drives">
+                <div class="drives-header">
+                    <div></div>
+                    <button class="btn-add">Add Drive</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-header">
+                        <div class="table-header-cell">Drive Name</div>
+                        <div class="table-header-cell">Scan</div>
+                        <div class="table-header-cell">Status</div>
+                        <div class="table-header-cell">Size</div>
+                        <div class="table-header-cell">Free Space</div>
+                        <div class="table-header-cell">File Count</div>
+                        <div class="table-header-cell">Last Scanned</div>
+                        <div class="table-header-cell">Description</div>
+                    </div>
+
+                    <div class="table-body">
+                        <div class="table-row" data-drive-id="1">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    Local Drive C
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">357.69 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%;"></div>
+                                </div>
+                                107.31 GB
+                            </div>
+                            <div class="cell">8,093</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="">
+                        </div>
+
+                        <div class="table-row" data-drive-id="2">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    WD MyCloud
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">497.51 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%;"></div>
+                                </div>
+                                149.23 GB
+                            </div>
+                            <div class="cell">8,975</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="Media Backup">
+                        </div>
+
+                        <div class="table-row" data-drive-id="3">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    Local Drive F
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">171.81 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%;"></div>
+                                </div>
+                                51.54 GB
+                            </div>
+                            <div class="cell">5,432</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="">
+                        </div>
+
+                        <div class="table-row" data-drive-id="4">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    La Cie 9TB
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">391.97 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 72%;"></div>
+                                </div>
+                                117.59 GB
+                            </div>
+                            <div class="cell">12,156</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="Archive">
+                        </div>
+
+                        <div class="table-row" data-drive-id="5">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    Extreme SSD
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">284.28 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 68%;"></div>
+                                </div>
+                                85.28 GB
+                            </div>
+                            <div class="cell">6,789</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="">
+                        </div>
+
+                        <div class="table-row" data-drive-id="6">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    Extern SSD2
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">634.19 GB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%;"></div>
+                                </div>
+                                190.26 GB
+                            </div>
+                            <div class="cell">11,234</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="Video Projects">
+                        </div>
+
+                        <div class="table-row" data-drive-id="7">
+                            <div class="cell">
+                                <div class="drive-name">
+                                    <div class="drive-icon"></div>
+                                    cAREER NOW usb
+                                </div>
+                            </div>
+                            <button class="btn-scan">⟳ Re-Scan</button>
+                            <div class="cell">
+                                <div class="status-badge">
+                                    <span class="status-dot"></span>
+                                    Connected
+                                </div>
+                            </div>
+                            <div class="cell">785.61 MB</div>
+                            <div class="cell">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%;"></div>
+                                </div>
+                                233.68 MB
+                            </div>
+                            <div class="cell">892</div>
+                            <div class="cell">Jan 27, 2026</div>
+                            <input type="text" class="cell-editable" placeholder="Add notes..." value="">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div class="tab-content" id="search">
+                <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                    <p>Search tab content coming soon...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="controls-bottom">
+            <button class="btn-remove" id="removeBtn">Remove Drive</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let selectedDriveId = null;
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const tabName = e.target.dataset.tab;
+                
+                // Update tab styles
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName).classList.add('active');
+            });
+        });
+
+        // Row selection
+        document.querySelectorAll('.table-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                // Don't select if clicking on button or input
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
+                    return;
+                }
+
+                // Remove previous selection
+                document.querySelectorAll('.table-row').forEach(r => {
+                    r.classList.remove('selected');
+                });
+
+                // Add selection to clicked row
+                row.classList.add('selected');
+                selectedDriveId = row.dataset.driveId;
+
+                // Update remove button state
+                updateRemoveButton();
+            });
+        });
+
+        // Remove button functionality
+        function updateRemoveButton() {
+            const removeBtn = document.getElementById('removeBtn');
+            
+            if (selectedDriveId) {
+                removeBtn.classList.add('active');
+            } else {
+                removeBtn.classList.remove('active');
+            }
+        }
+
+        // Remove drive
+        document.getElementById('removeBtn').addEventListener('click', () => {
+            if (!selectedDriveId) return;
+
+            const row = document.querySelector(`[data-drive-id="${selectedDriveId}"]`);
+            
+            // Smooth fade out
+            row.style.opacity = '0';
+            row.style.transition = 'opacity 200ms ease-out';
+            
+            setTimeout(() => {
+                row.remove();
+                selectedDriveId = null;
+                updateRemoveButton();
+            }, 200);
+        });
+
+        // Re-scan button behavior
+        document.querySelectorAll('.btn-scan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const originalText = btn.textContent;
+                btn.textContent = '⟳ Scanning...';
+                btn.disabled = true;
+
+                // Simulate scan
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            });
+        });
+
+        // Prevent row selection when clicking editable field
+        document.querySelectorAll('.cell-editable').forEach(input => {
+            input.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+    </script>
+</body>
+</html>
