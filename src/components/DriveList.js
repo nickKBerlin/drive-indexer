@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './DriveList.css';
 import AddDriveModal from './AddDriveModal';
 
-function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteDrive, scanningDrives, scanProgress }) {
+function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteDrive, scanningDrives, scanProgress, onScanDrive }) {
   const [showModal, setShowModal] = useState(false);
 
   const formatSize = (bytes) => {
@@ -44,8 +44,21 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     return 100 - calculateFreeSpacePercentage(drive);
   };
 
-  const handleScanClick = (drive) => {
-    onSelectDrive(drive);
+  const handleScanClick = async (e, drive) => {
+    e.stopPropagation();
+    
+    try {
+      // Open folder browser
+      const selectedPath = await window.api.selectFolder();
+      
+      if (selectedPath) {
+        // Trigger scan with selected path
+        onScanDrive(drive.id, selectedPath);
+      }
+    } catch (err) {
+      console.error('Error selecting folder:', err);
+      alert('Error selecting folder: ' + err.message);
+    }
   };
 
   return (
@@ -123,11 +136,9 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                     <td>
                       <button
                         className="di-chip action"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleScanClick(drive);
-                        }}
+                        onClick={(e) => handleScanClick(e, drive)}
                         disabled={isScanning}
+                        title={isScanning ? 'Scanning in progress...' : fileCount > 0 ? 'Re-scan this drive' : 'Scan this drive'}
                       >
                         ⟳ {isScanning ? 'Scanning…' : fileCount > 0 ? 'Re-Scan' : 'Scan'}
                       </button>
