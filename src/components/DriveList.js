@@ -24,13 +24,10 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   };
 
   const getConnectedStatus = (drive) => {
-    // You can implement drive connection detection here
-    // For now, we'll show connected if it has been scanned
     return drive.lastScanned ? 'connected' : 'offline';
   };
 
   const calculateFreeSpace = (drive) => {
-    // If we don't have free space info, calculate from total
     if (!drive.freeSpace && drive.totalSize) {
       return drive.totalSize * 0.3; // Assume 30% free for demo
     }
@@ -47,12 +44,19 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     return 100 - calculateFreeSpacePercentage(drive);
   };
 
+  const handleScanClick = (drive) => {
+    onSelectDrive(drive);
+  };
+
   return (
-    <div className="drive-list-container">
-      <div className="drive-list-header">
-        <h2>📁 Your Drives</h2>
-        <button className="button primary" onClick={() => setShowModal(true)}>
-          ➕ Add Drive
+    <div className="di-drive-panel">
+      <div className="di-drive-header-row">
+        <div>
+          <h2 className="di-section-title">Your Drives</h2>
+          <p className="di-section-subtitle">Registered storage devices and their index status</p>
+        </div>
+        <button className="di-button primary" onClick={() => setShowModal(true)}>
+          + Add Drive
         </button>
       </div>
 
@@ -68,125 +72,113 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
       )}
 
       {drives.length === 0 ? (
-        <div className="empty-state">
-          <p>📭 No drives registered yet</p>
-          <p style={{ fontSize: '14px', marginTop: '8px' }}>Click "Add Drive" to get started!</p>
+        <div className="di-empty-state">
+          <p className="di-empty-title">No drives registered yet</p>
+          <p className="di-empty-subtitle">Click "+ Add Drive" to register your first drive.</p>
         </div>
       ) : (
-        <table className="drives-table">
-          <thead>
-            <tr>
-              <th style={{ width: '25%' }}>Drive Name</th>
-              <th style={{ width: '12%' }}>Scan</th>
-              <th style={{ width: '10%' }}>Status</th>
-              <th style={{ width: '12%' }}>Size</th>
-              <th style={{ width: '20%' }}>Free Space</th>
-              <th style={{ width: '15%' }}>Last Scanned</th>
-              <th style={{ width: '6%' }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {drives.map((drive) => {
-              const isScanning = scanningDrives && scanningDrives.has(drive.id);
-              const progress = scanProgress && scanProgress[drive.id];
-              const connectedStatus = getConnectedStatus(drive);
-              const usedPercentage = getUsedSpacePercentage(drive);
-              const fileCount = drive.fileCount || 0;
+        <div className="di-table-wrapper">
+          <table className="di-table">
+            <thead>
+              <tr>
+                <th>Drive Name</th>
+                <th>Scan</th>
+                <th>Status</th>
+                <th>Size</th>
+                <th>Free Space</th>
+                <th>File Count</th>
+                <th>Last Scanned</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {drives.map((drive) => {
+                const isScanning = scanningDrives && scanningDrives.has(drive.id);
+                const progress = scanProgress && scanProgress[drive.id];
+                const connectedStatus = getConnectedStatus(drive);
+                const usedPercentage = getUsedSpacePercentage(drive);
+                const fileCount = drive.fileCount || 0;
 
-              return (
-                <tr key={drive.id} className={isScanning ? 'scanning' : ''}>
-                  {/* Drive Name Column */}
-                  <td>
-                    <div className="drive-name-cell">
-                      <div className="drive-icon">💾</div>
-                      <div className="drive-info-group">
-                        <div className="drive-name">{drive.name}</div>
-                        {drive.description && (
-                          <div className="drive-description">{drive.description}</div>
-                        )}
-                        {isScanning && progress && (
-                          <div className="scanning-badge">
-                            🔄 {progress.fileCount || 0} files
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Scan Button Column */}
-                  <td>
-                    <button
-                      className={`button ${fileCount > 0 ? 'rescan' : 'scan'} small`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectDrive(drive);
-                      }}
-                      disabled={isScanning}
-                      title={fileCount > 0 ? 'Re-scan this drive' : 'Scan this drive'}
-                    >
-                      {isScanning ? '🔄 Scanning' : (fileCount > 0 ? '♻️ Re-Scan' : '📊 Scan')}
-                    </button>
-                  </td>
-
-                  {/* Status Column */}
-                  <td>
-                    <div className={`status-indicator ${connectedStatus}`}>
-                      <span className={`status-dot ${connectedStatus}`}></span>
-                      {connectedStatus === 'connected' ? '🟢 Connected' : '⚫ Offline'}
-                    </div>
-                  </td>
-
-                  {/* Size Column */}
-                  <td>
-                    <div className="size-cell">{formatSize(drive.totalSize || 0)}</div>
-                  </td>
-
-                  {/* Free Space Column with Progress Bar */}
-                  <td>
-                    <div className="free-space-cell">
-                      <div className="progress-bar-container">
-                        <div className="progress-bar">
-                          <div
-                            className="progress-bar-fill"
-                            style={{ width: `${usedPercentage}%` }}
-                          ></div>
-                        </div>
-                        <div className="progress-bar-label">
-                          <span>{formatSize(calculateFreeSpace(drive))}</span>
-                          <span>{calculateFreeSpacePercentage(drive)}% free</span>
+                return (
+                  <tr
+                    key={drive.id}
+                    className={`di-table-row ${selectedDrive?.id === drive.id ? 'selected' : ''}`}
+                    onClick={() => onSelectDrive(drive)}
+                  >
+                    <td>
+                      <div className="di-drive-cell">
+                        <div className="di-drive-icon" aria-hidden="true" />
+                        <div className="di-drive-meta">
+                          <div className="di-drive-name">{drive.name}</div>
+                          {drive.description && (
+                            <div className="di-drive-description">{drive.description}</div>
+                          )}
+                          {isScanning && progress && (
+                            <div className="di-drive-scanning">Scanning {progress.fileCount || 0} files…</div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  {/* Last Scanned Column */}
-                  <td>
-                    <div className={`date-cell ${!drive.lastScanned ? 'never-scanned' : ''}`}>
-                      {fileCount > 0 ? formatDate(drive.lastScanned) : 'Never'}
-                    </div>
-                  </td>
-
-                  {/* Delete Button Column */}
-                  <td>
-                    <div className="actions-cell">
+                    <td>
                       <button
-                        className="button danger small"
+                        className="di-chip action"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleScanClick(drive);
+                        }}
+                        disabled={isScanning}
+                      >
+                        {isScanning ? 'Scanning…' : fileCount > 0 ? 'Re-scan' : 'Scan'}
+                      </button>
+                    </td>
+
+                    <td>
+                      <span className={`di-status-pill ${connectedStatus}`}>
+                        {connectedStatus === 'connected' ? 'Connected' : 'Offline'}
+                      </span>
+                    </td>
+
+                    <td>{formatSize(drive.totalSize || 0)}</td>
+
+                    <td>
+                      <div className="di-space-bar">
+                        <div className="di-space-bar-track">
+                          <div
+                            className="di-space-bar-fill"
+                            style={{ width: `${usedPercentage}%` }}
+                          />
+                        </div>
+                        <div className="di-space-bar-labels">
+                          <span>{formatSize(calculateFreeSpace(drive))} free</span>
+                          <span>{calculateFreeSpacePercentage(drive)}%</span>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td>{fileCount.toLocaleString()}</td>
+
+                    <td>{fileCount > 0 ? formatDate(drive.lastScanned) : 'Never'}</td>
+
+                    <td>
+                      <button
+                        className="di-icon-button danger"
                         onClick={(e) => {
                           e.stopPropagation();
                           onDeleteDrive(drive.id);
                         }}
                         disabled={isScanning}
-                        title="Delete this drive from database"
+                        aria-label="Delete drive"
                       >
-                        🗑️
+                        ✕
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
