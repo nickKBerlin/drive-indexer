@@ -5,6 +5,11 @@ function Scanner({ drive, onScan, scanning }) {
   const [drivePath, setDrivePath] = useState('');
   const [scanProgress, setScanProgress] = useState('');
 
+  // Log when drive prop changes
+  useEffect(() => {
+    console.log('[Scanner] Drive prop changed:', drive);
+  }, [drive]);
+
   const handleBrowsePath = async () => {
     try {
       console.log('[Scanner] Browsing for path...');
@@ -24,11 +29,17 @@ function Scanner({ drive, onScan, scanning }) {
   };
 
   const handleScan = () => {
+    console.log('[Scanner] handleScan called');
+    console.log('[Scanner] drivePath:', drivePath);
+    console.log('[Scanner] drive:', drive);
+    console.log('[Scanner] drive?.id:', drive?.id);
+
     if (!drivePath) {
       alert('Please select or enter a drive path');
       return;
     }
     if (!drive || !drive.id) {
+      console.error('[Scanner] Drive validation failed:', { drive, driveId: drive?.id });
       alert('Error: Drive not properly selected. Please select the drive again.');
       return;
     }
