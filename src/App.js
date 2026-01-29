@@ -17,7 +17,6 @@ function App() {
     console.log('[App] Initializing...');
     loadDrives();
 
-    // Listen for scan progress updates
     if (window.api?.onScanProgress) {
       window.api.onScanProgress((data) => {
         setScanProgress(prev => ({ ...prev, [data.driveId]: data }));
@@ -128,58 +127,76 @@ function App() {
   const isSelectedDriveScanning = selectedDrive && scanningDrives.has(selectedDrive.id);
 
   return (
-    <div className="app">
-      <div className="app-header">
-        <h1>Drive Indexer</h1>
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="app-nav">
+    <div className="di-app-root">
+      <header className="di-header">
+        <div className="di-header-main">
+          <div>
+            <h1 className="di-title">Drive Indexer</h1>
+            <p className="di-subtitle">Smart multi-drive indexer for creative projects</p>
+          </div>
+          <div className="di-header-meta">
+            {error && <div className="di-error-badge">{error}</div>}
+          </div>
+        </div>
+
+        <nav className="di-tabs">
           <button
-            className={`nav-button ${activeTab === 'drives' ? 'active' : ''}`}
+            className={`di-tab ${activeTab === 'drives' ? 'active' : ''}`}
             onClick={() => setActiveTab('drives')}
           >
             Drives
           </button>
           <button
-            className={`nav-button ${activeTab === 'search' ? 'active' : ''}`}
+            className={`di-tab ${activeTab === 'search' ? 'active' : ''}`}
             onClick={() => setActiveTab('search')}
           >
             Search
           </button>
-        </div>
-      </div>
+        </nav>
+      </header>
 
-      <div className="app-container">
-        <div className="app-content">
-          <div className={`tab-content ${activeTab === 'drives' ? 'active' : ''}`}>
-            <div className="drives-header">
-              <Scanner
-                drive={selectedDrive}
-                onScan={handleScanDrive}
-                scanning={!!isSelectedDriveScanning}
+      <main className="di-main">
+        {activeTab === 'drives' && (
+          <div className="di-layout-grid">
+            <section className="di-column di-column-left">
+              <div className="di-card di-card-scanner">
+                <Scanner
+                  drive={selectedDrive}
+                  onScan={handleScanDrive}
+                  scanning={!!isSelectedDriveScanning}
+                />
+              </div>
+            </section>
+
+            <section className="di-column di-column-right">
+              <div className="di-card di-card-table">
+                <DriveList
+                  drives={drives}
+                  selectedDrive={selectedDrive}
+                  onSelectDrive={setSelectedDrive}
+                  scanningDrives={scanningDrives}
+                  scanProgress={scanProgress}
+                  onScanDrive={handleScanDrive}
+                  onDeleteDrive={handleDeleteDrive}
+                  onAddDrive={handleAddDrive}
+                />
+              </div>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'search' && (
+          <section className="di-column-full">
+            <div className="di-card di-card-search">
+              <SearchPanel
+                drives={drives}
+                onSearch={handleSearch}
+                results={searchResults}
               />
             </div>
-            <DriveList
-              drives={drives}
-              selectedDrive={selectedDrive}
-              onSelectDrive={setSelectedDrive}
-              scanningDrives={scanningDrives}
-              scanProgress={scanProgress}
-              onScanDrive={handleScanDrive}
-              onDeleteDrive={handleDeleteDrive}
-              onAddDrive={handleAddDrive}
-            />
-          </div>
-
-          <div className={`tab-content ${activeTab === 'search' ? 'active' : ''}`}>
-            <SearchPanel
-              drives={drives}
-              onSearch={handleSearch}
-              results={searchResults}
-            />
-          </div>
-        </div>
-      </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }
