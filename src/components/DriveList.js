@@ -6,11 +6,11 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showModal, setShowModal] = useState(false);
 
   const formatSize = (bytes) => {
-    if (bytes === 0) return '0 B';
+    if (!bytes || bytes === 0) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
   };
 
   const formatDate = (dateString) => {
@@ -28,10 +28,12 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   };
 
   const calculateFreeSpace = (drive) => {
-    if (!drive.freeSpace && drive.totalSize) {
-      return drive.totalSize * 0.3; // Assume 30% free for demo
+    if (drive.freeSpace != null) return drive.freeSpace;
+    if (drive.totalSize) {
+      // Fallback: assume 30% free when we don't have explicit freeSpace yet
+      return drive.totalSize * 0.3;
     }
-    return drive.freeSpace || 0;
+    return 0;
   };
 
   const calculateFreeSpacePercentage = (drive) => {
@@ -48,11 +50,9 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     e.stopPropagation();
     
     try {
-      // Open folder browser
       const selectedPath = await window.api.selectFolder();
       
       if (selectedPath) {
-        // Trigger scan with selected path
         onScanDrive(drive.id, selectedPath);
       }
     } catch (err) {
@@ -112,6 +112,10 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                 const usedPercentage = getUsedSpacePercentage(drive);
                 const fileCount = drive.fileCount || 0;
 
+                const freeBytes = calculateFreeSpace(drive);
+                const freePercent = calculateFreeSpacePercentage(drive);
+                const totalBytes = drive.totalSize || 0;
+
                 return (
                   <tr
                     key={drive.id}
@@ -150,7 +154,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                       </span>
                     </td>
 
-                    <td>{formatSize(drive.totalSize || 0)}</td>
+                    <td>{formatSize(totalBytes)}</td>
 
                     <td>
                       <div className="di-space-bar">
@@ -161,8 +165,13 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                           />
                         </div>
                         <div className="di-space-bar-labels">
-                          <span>{formatSize(calculateFreeSpace(drive))} free</span>
-                          <span>{calculateFreeSpacePercentage(drive)}%</span>
+                          <span>
+                            {formatSize(freeBytes)} free
+                            {totalBytes > 0 && (
+                              <> of {formatSize(totalBytes)}</>
+                            )}
+                          </span>
+                          <span>{freePercent}%</span>
                         </div>
                       </div>
                     </td>
