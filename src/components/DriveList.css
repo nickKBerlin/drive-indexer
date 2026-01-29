@@ -1,289 +1,367 @@
-/* ============================================
-   DRIVE LIST STYLING - MODERN DARK THEME
-   ============================================ */
-
-.drive-list-container {
-  width: 100%;
+/* CSS Variables for theming */
+:root {
+    --bg-dark: #0d0d0d;
+    --header-bg: #1a1a1a;
+    --row-dark: #1f1f1f;
+    --row-light: #282828;
+    --row-selected: #303030;
+    --row-hover: #2f2f2f;
+    --text-primary: #e0e0e0;
+    --text-secondary: #888888;
+    --text-title: #666666;
+    --accent-turquoise: #2dd4bf;
+    --accent-red: #ef4444;
+    --accent-green: #10b981;
+    --free-space-gradient: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    --transition-fast: 150ms ease-out;
+    --transition-normal: 200ms ease-out;
 }
 
-.drive-list-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+.di-drive-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    background: var(--bg-dark);
+    color: var(--text-primary);
 }
 
-.drive-list-header h2 {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-primary);
+.di-drive-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
 }
 
-.drive-list-header h2::before {
-  content: '💾';
-  font-size: 24px;
+.di-section-title {
+    font-size: 16px;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin: 0;
+    margin-bottom: 4px;
 }
 
-/* ============================================
-   TABLE STYLING
-   ============================================ */
-
-.drives-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
+.di-section-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
-.drives-table thead {
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
+.di-button {
+    padding: 8px 16px;
+    background: #4a4a4a;
+    color: #888888;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background var(--transition-fast);
 }
 
-.drives-table th {
-  padding: 16px 20px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-light);
+.di-button:hover {
+    background: #555555;
+    color: #aaaaaa;
 }
 
-.drives-table th:last-child {
-  text-align: right;
+.di-button.primary {
+    background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+    color: white;
 }
 
-.drives-table tbody tr {
-  border-bottom: 1px solid var(--border-light);
-  transition: background-color 0.2s ease;
+.di-button.primary:hover {
+    background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
 }
 
-.drives-table tbody tr:hover {
-  background: rgba(56, 189, 248, 0.05);
+.di-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
 }
 
-.drives-table tbody tr:last-child {
-  border-bottom: none;
+.di-empty-title {
+    font-size: 16px;
+    color: var(--text-primary);
+    margin: 0 0 8px 0;
 }
 
-.drives-table td {
-  padding: 16px 20px;
-  vertical-align: middle;
-  font-size: 14px;
-  color: var(--text-primary);
+.di-empty-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
 }
 
-/* ============================================
-   DRIVE INFORMATION CELLS
-   ============================================ */
-
-.drive-name {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-  color: var(--text-primary);
+.di-table-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    overflow: hidden;
 }
 
-.drive-icon {
-  font-size: 20px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.di-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: var(--bg-dark);
 }
 
-.drive-status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.di-table thead {
+    background: var(--row-dark);
+    border-bottom: 1px solid #2a2a2a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-teal);
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
-  animation: pulse 2s ease-in-out infinite;
+.di-table th {
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    border: none;
+}
+
+.di-table tbody tr {
+    border-bottom: 1px solid #2a2a2a;
+    transition: background var(--transition-fast);
+}
+
+.di-table tbody tr:nth-child(odd) {
+    background: var(--row-dark);
+}
+
+.di-table tbody tr:nth-child(even) {
+    background: var(--row-light);
+}
+
+.di-table tbody tr:hover {
+    background: var(--row-hover);
+    cursor: pointer;
+}
+
+.di-table tbody tr.selected {
+    background: var(--row-selected);
+}
+
+.di-table tbody tr.selected:hover {
+    background: var(--row-selected);
+}
+
+.di-table td {
+    padding: 12px 16px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.di-drive-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.di-drive-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: #444444;
+    flex-shrink: 0;
+}
+
+.di-drive-meta {
+    min-width: 0;
+    flex: 1;
+}
+
+.di-drive-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.di-drive-description {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.di-drive-scanning {
+    font-size: 11px;
+    color: var(--accent-turquoise);
+    margin-top: 2px;
+}
+
+.di-chip {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.di-chip:hover:not(:disabled) {
+    background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
+    transform: translateY(-1px);
+}
+
+.di-chip:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.di-chip.action {
+    display: inline-block;
+}
+
+.di-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.di-status-pill.connected {
+    color: var(--accent-green);
+}
+
+.di-status-pill.connected::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse 2s infinite;
+}
+
+.di-status-pill.offline {
+    color: var(--text-secondary);
+}
+
+.di-status-pill.offline::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-secondary);
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
-.status-text {
-  font-size: 13px;
-  color: var(--accent-teal);
-  font-weight: 500;
-}
-
-/* Size bar */
-.free-space-bar {
-  width: 150px;
-  height: 6px;
-  background: rgba(56, 189, 248, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.free-space-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-teal) 0%, #0284c7 100%);
-  border-radius: 3px;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-}
-
-/* ============================================
-   ACTIONS COLUMN
-   ============================================ */
-
-.drive-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  justify-content: flex-end;
-}
-
-/* ============================================
-   EMPTY STATE
-   ============================================ */
-
-.empty-state {
-  text-align: center;
-  padding: 80px 40px;
-  color: var(--text-muted);
-  background: var(--bg-secondary);
-  border-radius: 8px;
-  border: 1px dashed var(--border-color);
-}
-
-.empty-state-icon {
-  font-size: 64px;
-  margin-bottom: 24px;
-  opacity: 0.5;
-}
-
-.empty-state-text {
-  font-size: 16px;
-  margin-bottom: 24px;
-  line-height: 1.5;
-  color: var(--text-secondary);
-}
-
-.empty-state-text strong {
-  color: var(--text-primary);
-}
-
-/* ============================================
-   SCAN PROGRESS
-   ============================================ */
-
-.scan-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--accent-teal);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.progress-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(56, 189, 248, 0.2);
-  border-top: 2px solid var(--accent-teal);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 1024px) {
-  .drives-table {
-    font-size: 13px;
-  }
-
-  .drives-table th,
-  .drives-table td {
-    padding: 12px 16px;
-  }
-
-  .drive-name {
-    gap: 8px;
-  }
-
-  .free-space-bar {
-    width: 100px;
-  }
-}
-
-@media (max-width: 768px) {
-  .drive-list-header {
-    flex-direction: column;
-    align-items: flex-start;
-    margin-bottom: 16px;
-  }
-
-  .drives-table {
-    font-size: 12px;
-  }
-
-  .drives-table th,
-  .drives-table td {
-    padding: 10px 12px;
-  }
-
-  .drive-actions {
+.di-space-bar {
+    display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  .free-space-bar {
-    width: 80px;
-  }
 }
 
-@media (max-width: 480px) {
-  .drives-table {
+.di-space-bar-track {
+    width: 100%;
+    height: 4px;
+    background: #3a3a3a;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.di-space-bar-fill {
+    height: 100%;
+    background: var(--free-space-gradient);
+    border-radius: 2px;
+    transition: width var(--transition-normal);
+}
+
+.di-space-bar-labels {
+    display: flex;
+    justify-content: space-between;
     font-size: 11px;
-  }
+    color: var(--text-secondary);
+}
 
-  .drives-table th,
-  .drives-table td {
-    padding: 8px 10px;
-  }
+.di-icon-button {
+    padding: 4px 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
-  .drive-icon {
-    font-size: 16px;
-    width: 24px;
-    height: 24px;
-  }
+.di-icon-button:hover:not(:disabled) {
+    color: var(--accent-red);
+    border-color: var(--accent-red);
+}
 
-  .free-space-bar {
-    width: 60px;
-  }
+.di-icon-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.di-icon-button.danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Scrollbar styling */
+.di-table tbody {
+    display: block;
+    max-height: 500px;
+    overflow-y: auto;
+    width: 100%;
+}
+
+.di-table thead,
+.di-table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.di-table::-webkit-scrollbar {
+    width: 8px;
+}
+
+.di-table::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.di-table::-webkit-scrollbar-thumb {
+    background: #3a3a3a;
+    border-radius: 4px;
+}
+
+.di-table::-webkit-scrollbar-thumb:hover {
+    background: #4a4a4a;
 }
