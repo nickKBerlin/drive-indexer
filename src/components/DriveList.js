@@ -14,7 +14,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Never scanned';
+    if (!dateString) return 'Never';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -102,7 +102,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                 return (
                   <tr
                     key={drive.id}
-                    className={`di-table-row ${selectedDrive?.id === drive.id ? 'selected' : ''}`}
+                    className={`${selectedDrive?.id === drive.id ? 'selected' : ''}`}
                     onClick={() => onSelectDrive(drive)}
                   >
                     <td>
@@ -129,7 +129,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                         }}
                         disabled={isScanning}
                       >
-                        {isScanning ? 'Scanning…' : fileCount > 0 ? 'Re-scan' : 'Scan'}
+                        ⟳ {isScanning ? 'Scanning…' : fileCount > 0 ? 'Re-Scan' : 'Scan'}
                       </button>
                     </td>
 
