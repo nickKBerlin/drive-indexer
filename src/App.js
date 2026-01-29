@@ -158,16 +158,6 @@ function App() {
       <main className="di-main">
         {activeTab === 'drives' && (
           <div className="di-layout-grid">
-            <section className="di-column di-column-left">
-              <div className="di-card di-card-scanner">
-                <Scanner
-                  drive={selectedDrive}
-                  onScan={handleScanDrive}
-                  scanning={!!isSelectedDriveScanning}
-                />
-              </div>
-            </section>
-
             <section className="di-column di-column-right">
               <div className="di-card di-card-table">
                 <DriveList
