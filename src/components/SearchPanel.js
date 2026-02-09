@@ -175,6 +175,7 @@ function SearchPanel({ drives, onSearch, results }) {
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
+        {/* Top: Search Input */}
         <div className="search-input-group">
           <input
             type="text"
@@ -188,9 +189,41 @@ function SearchPanel({ drives, onSearch, results }) {
           </button>
         </div>
 
+        {/* Three-Column Filter Layout */}
         <div className="filter-container">
+          {/* Left Column: Search Results Info (placeholder when empty) */}
           <div className="filter-section">
-            <h4>Search Drives:</h4>
+            <h4>📊 Search Scope</h4>
+            <div style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px', lineHeight: '1.6' }}>
+              {selectedCategories.length === 0 ? (
+                <p>All file types selected</p>
+              ) : (
+                <p>{selectedCategories.length} file type{selectedCategories.length !== 1 ? 's' : ''} selected</p>
+              )}
+              {selectedDrives.size === 0 ? (
+                <p style={{ marginTop: '8px' }}>No drives selected</p>
+              ) : selectedDrives.size === drives.length ? (
+                <p style={{ marginTop: '8px' }}>Searching all {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
+              ) : (
+                <p style={{ marginTop: '8px' }}>Searching {selectedDrives.size} of {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
+              )}
+              {results.length > 0 && (
+                <p style={{ marginTop: '16px', color: 'var(--color-primary, #32b8c6)', fontWeight: '600' }}>
+                  ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Center Column: File Type Filters */}
+          <div className="filter-section">
+            <h4>📁 File Types</h4>
+            <FilterTree onFilterChange={handleFilterChange} />
+          </div>
+
+          {/* Right Column: Drive Selection */}
+          <div className="filter-section">
+            <h4>📀 Drives</h4>
             <div className="checkbox-group">
               <label className="checkbox-label">
                 <input
@@ -209,22 +242,18 @@ function SearchPanel({ drives, onSearch, results }) {
                     onChange={() => toggleDrive(drive.id)}
                   />
                   {drive.name}
-                  <span className="file-count">({drive.fileCount || 0} files)</span>
+                  <span className="file-count">({drive.fileCount || 0})</span>
                 </label>
               ))}
             </div>
           </div>
-
-          <div className="filter-section">
-            <h4>Categories:</h4>
-            <FilterTree onFilterChange={handleFilterChange} />
-          </div>
         </div>
       </form>
 
+      {/* Results Table */}
       {results.length > 0 && (
         <div className="results-section">
-          <h3>Found {results.length} files</h3>
+          <h3>Search Results</h3>
           <div className="results-table-container">
             <table className="results-table">
               <thead>
@@ -282,10 +311,12 @@ function SearchPanel({ drives, onSearch, results }) {
         </div>
       )}
 
+      {/* No Results Message */}
       {query && results.length === 0 && (
         <div className="no-results">No files found matching your search.</div>
       )}
 
+      {/* Drive Letter Modal */}
       {showModal && selectedFile && (
         <DriveLetterModal
           file={selectedFile}
