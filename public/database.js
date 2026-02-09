@@ -25,6 +25,7 @@ class Database {
           lastScanned TEXT,
           fileCount INTEGER DEFAULT 0,
           totalSize INTEGER DEFAULT 0,
+          freeSpace INTEGER DEFAULT 0,
           createdAt TEXT
         )
       `);
@@ -48,6 +49,21 @@ class Database {
           });
         } else {
           console.log('[Database] ✅ scanPath column already exists');
+        }
+
+        // Migration: Add freeSpace column if it doesn't exist
+        const hasFreeSpace = columns.some(col => col.name === 'freeSpace');
+        if (!hasFreeSpace) {
+          console.log('[Database] ✨ Adding freeSpace column (database migration)...');
+          this.db.run(`ALTER TABLE drives ADD COLUMN freeSpace INTEGER DEFAULT 0`, (err) => {
+            if (err) {
+              console.error('[Database] Error adding freeSpace column:', err);
+            } else {
+              console.log('[Database] ✅ freeSpace column added successfully!');
+            }
+          });
+        } else {
+          console.log('[Database] ✅ freeSpace column already exists');
         }
       });
 
@@ -103,7 +119,7 @@ class Database {
             reject(err);
           } else {
             console.log('[Database] Drive added:', id);
-            resolve({ id, ...driveData, createdAt, fileCount: 0, totalSize: 0 });
+            resolve({ id, ...driveData, createdAt, fileCount: 0, totalSize: 0, freeSpace: 0 });
           }
         }
       );
@@ -112,18 +128,44 @@ class Database {
 
   updateDrive(driveId, driveData) {
     return new Promise((resolve, reject) => {
-      this.db.run(
-        `UPDATE drives SET name = ?, description = ? WHERE id = ?`,
-        [driveData.name, driveData.description || '', driveId],
-        function (err) {
-          if (err) {
-            console.error('[Database] Error in updateDrive:', err);
-            reject(err);
-          } else {
-            resolve({ id: driveId, ...driveData });
-          }
+      // Build dynamic SQL based on what fields are provided
+      const fields = [];
+      const values = [];
+
+      if (driveData.name !== undefined) {
+        fields.push('name = ?');
+        values.push(driveData.name);
+      }
+      if (driveData.description !== undefined) {
+        fields.push('description = ?');
+        values.push(driveData.description || '');
+      }
+      if (driveData.totalSize !== undefined) {
+        fields.push('totalSize = ?');
+        values.push(driveData.totalSize);
+      }
+      if (driveData.freeSpace !== undefined) {
+        fields.push('freeSpace = ?');
+        values.push(driveData.freeSpace);
+      }
+
+      if (fields.length === 0) {
+        resolve({ id: driveId, ...driveData });
+        return;
+      }
+
+      values.push(driveId);
+      const sql = `UPDATE drives SET ${fields.join(', ')} WHERE id = ?`;
+
+      this.db.run(sql, values, function (err) {
+        if (err) {
+          console.error('[Database] Error in updateDrive:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Drive updated:', driveId);
+          resolve({ id: driveId, ...driveData });
         }
-      );
+      });
     });
   }
 
