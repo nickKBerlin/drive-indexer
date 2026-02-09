@@ -167,7 +167,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
                     <td>{formatSize(totalBytes)}</td>
 
-                    <td>
+                    <td className="di-space-bar-cell">
                       <div className="di-space-bar">
                         <div className="di-space-bar-track">
                           <div
