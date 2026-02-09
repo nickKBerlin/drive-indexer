@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import './SearchPanel.css';
 import DriveLetterModal from './DriveLetterModal';
+import FilterTree from './FilterTree';
 
 function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
   const [selectedDrives, setSelectedDrives] = useState(new Set(drives.map(d => d.id)));
-  const [selectedCategories, setSelectedCategories] = useState(new Set());
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
   const [actionedId, setActionedId] = useState(null);
@@ -21,48 +22,14 @@ function SearchPanel({ drives, onSearch, results }) {
     e.preventDefault();
     onSearch(query, {
       driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
-      categories: selectedCategories.size > 0 ? Array.from(selectedCategories) : null,
+      categories: selectedCategories.length > 0 ? selectedCategories : null,
     });
   };
 
-  const availableCategories = [
-    'Image (JPEG)',
-    'Image (PNG)',
-    'Image (TIFF)',
-    'Image (GIF)',
-    'Image (WebP)',
-    'Image (RAW)',
-    'Vector (SVG)',
-    'Video (MP4)',
-    'Video (MOV)',
-    'Video (AVI)',
-    'Video (ProRes)',
-    'Video (Professional)',
-    'Audio (WAV)',
-    'Audio (MP3)',
-    'Audio (AIFF)',
-    'Audio (FLAC)',
-    '3D Model (Blender)',
-    '3D Model (FBX)',
-    '3D Model (OBJ)',
-    '3D Model (Cinema 4D)',
-    '3D Model (glTF)',
-    'After Effects Project',
-    'Premiere Pro Project',
-    'Photoshop',
-    'Illustrator',
-    'Photoshop Brush',
-    'Photoshop Action',
-    'Archive (ZIP)',
-    'Archive (RAR)',
-    'Archive (7-Zip)',
-    'Document (PDF)',
-    'Document (Word)',
-    'Document (Excel)',
-    'Font (TrueType)',
-    'Font (OpenType)',
-    'Other',
-  ];
+  // Callback when FilterTree changes
+  const handleFilterChange = (categories) => {
+    setSelectedCategories(categories);
+  };
 
   const formatSize = (bytes) => {
     if (bytes === 0) return '0 B';
@@ -161,24 +128,6 @@ function SearchPanel({ drives, onSearch, results }) {
     }
   };
 
-  const toggleCategory = (category) => {
-    const newSelected = new Set(selectedCategories);
-    if (newSelected.has(category)) {
-      newSelected.delete(category);
-    } else {
-      newSelected.add(category);
-    }
-    setSelectedCategories(newSelected);
-  };
-
-  const toggleAllCategories = () => {
-    if (selectedCategories.size === availableCategories.length) {
-      setSelectedCategories(new Set());
-    } else {
-      setSelectedCategories(new Set(availableCategories));
-    }
-  };
-
   const sortedResults = [...results].sort((a, b) => {
     let aVal, bVal;
     
@@ -268,27 +217,7 @@ function SearchPanel({ drives, onSearch, results }) {
 
           <div className="filter-section">
             <h4>Categories:</h4>
-            <div className="checkbox-group scrollable">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={selectedCategories.size === 0}
-                  onChange={toggleAllCategories}
-                />
-                <strong>All Categories</strong>
-              </label>
-              <hr className="filter-divider" />
-              {availableCategories.map((category) => (
-                <label key={category} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.has(category)}
-                    onChange={() => toggleCategory(category)}
-                  />
-                  {category}
-                </label>
-              ))}
-            </div>
+            <FilterTree onFilterChange={handleFilterChange} />
           </div>
         </div>
       </form>
