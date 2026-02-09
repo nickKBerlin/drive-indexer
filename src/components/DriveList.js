@@ -36,10 +36,24 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     return 0;
   };
 
+  const calculateUsedSpace = (drive) => {
+    const totalBytes = drive.totalSize || 0;
+    const freeBytes = calculateFreeSpace(drive);
+    return totalBytes - freeBytes;
+  };
+
+  const calculateUsedSpacePercentage = (drive) => {
+    const totalBytes = drive.totalSize || 0;
+    if (!totalBytes) return 0;
+    const usedBytes = calculateUsedSpace(drive);
+    return Math.round((usedBytes / totalBytes) * 100);
+  };
+
   const calculateFreeSpacePercentage = (drive) => {
-    if (!drive.totalSize) return 0;
-    const freeSpace = calculateFreeSpace(drive);
-    return Math.round((freeSpace / drive.totalSize) * 100);
+    const totalBytes = drive.totalSize || 0;
+    if (!totalBytes) return 0;
+    const freeBytes = calculateFreeSpace(drive);
+    return Math.round((freeBytes / totalBytes) * 100);
   };
 
   const handleScanClick = async (e, drive) => {
@@ -107,10 +121,11 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                 const connectedStatus = getConnectedStatus(drive);
                 const fileCount = drive.fileCount || 0;
 
-                // Calculate free space and percentage
-                const freeBytes = calculateFreeSpace(drive);
-                const freePercent = calculateFreeSpacePercentage(drive);
+                // Calculate used and free space
                 const totalBytes = drive.totalSize || 0;
+                const usedBytes = calculateUsedSpace(drive);
+                const usedPercent = calculateUsedSpacePercentage(drive);
+                const freePercent = calculateFreeSpacePercentage(drive);
 
                 return (
                   <tr
@@ -157,12 +172,12 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                         <div className="di-space-bar-track">
                           <div
                             className="di-space-bar-fill"
-                            style={{ width: `${freePercent}%` }}
+                            style={{ width: `${usedPercent}%` }}
                           />
                         </div>
                         <div className="di-space-bar-labels">
-                          <span>{formatSize(freeBytes)} free</span>
-                          <span>{freePercent}%</span>
+                          <span>{formatSize(usedBytes)} used</span>
+                          <span>{freePercent}% free</span>
                         </div>
                       </div>
                     </td>
