@@ -41,19 +41,11 @@ function AddDriveModal({ onAdd, onClose, existingNames }) {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>📀 Add New Drive</h2>
-          <button 
-            className="close-button" 
-            onClick={onClose}
-            type="button"
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <h2>Add New Drive</h2>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="drive-name">Drive Name *</label>
+            <label htmlFor="drive-name">DRIVE NAME *</label>
             <input
               id="drive-name"
               ref={inputRef}
@@ -68,7 +60,7 @@ function AddDriveModal({ onAdd, onClose, existingNames }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="drive-description">Description (Optional)</label>
+            <label htmlFor="drive-description">DESCRIPTION (OPTIONAL)</label>
             <textarea
               id="drive-description"
               value={description}
@@ -81,11 +73,11 @@ function AddDriveModal({ onAdd, onClose, existingNames }) {
           {error && <div className="error-message">⚠️ {error}</div>}
 
           <div className="modal-actions">
+            <button type="submit" className="button primary">
+              Add Drive
+            </button>
             <button type="button" className="button secondary" onClick={onClose}>
               Cancel
-            </button>
-            <button type="submit" className="button primary">
-              ✅ Add Drive
             </button>
           </div>
         </form>
