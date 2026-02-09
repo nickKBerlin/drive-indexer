@@ -1,9 +1,10 @@
 .filter-tree {
-  background: var(--color-bg-secondary, #ffffff);
-  border: 1px solid var(--color-border, rgba(94, 82, 64, 0.2));
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  /* Remove custom background - will inherit from parent filter-section */
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
 }
 
 .filter-header {
@@ -12,13 +13,13 @@
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border, rgba(94, 82, 64, 0.2));
+  border-bottom: 1px solid rgba(94, 82, 64, 0.2);
 }
 
 .filter-title {
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-text-primary, #13343b);
+  color: var(--color-text-primary, #f5f5f5);
   margin-bottom: 8px;
 }
 
@@ -30,8 +31,8 @@
 
 .clear-all-btn {
   background: transparent;
-  border: 1px solid var(--color-border, rgba(94, 82, 64, 0.2));
-  color: var(--color-text-secondary, #626c71);
+  border: 1px solid rgba(94, 82, 64, 0.3);
+  color: var(--color-text-secondary, #cbd5e1);
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 13px;
@@ -41,19 +42,41 @@
 }
 
 .clear-all-btn:hover {
-  background: var(--color-bg-hover, #f5f5f5);
-  border-color: var(--color-primary, #218d8d);
-  color: var(--color-primary, #218d8d);
+  background: rgba(50, 184, 198, 0.1);
+  border-color: var(--color-primary, #32b8c6);
+  color: var(--color-primary, #32b8c6);
 }
 
 .filter-groups {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom Scrollbar to match main app */
+.filter-groups::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-groups::-webkit-scrollbar-track {
+  background: rgba(94, 82, 64, 0.1);
+  border-radius: 3px;
+}
+
+.filter-groups::-webkit-scrollbar-thumb {
+  background: rgba(94, 82, 64, 0.3);
+  border-radius: 3px;
+}
+
+.filter-groups::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 82, 64, 0.5);
 }
 
 .filter-group {
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -61,20 +84,20 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   cursor: pointer;
   transition: background 150ms;
-  border-radius: 8px;
+  border-radius: 6px;
   user-select: none;
 }
 
 .group-header:hover {
-  background: var(--color-bg-hover, #f5f5f5);
+  background: rgba(50, 184, 198, 0.08);
 }
 
 .expand-icon {
   font-size: 12px;
-  color: var(--color-text-muted, #a7a9a9);
+  color: var(--color-text-muted, #94a3b8);
   transition: transform 200ms ease-in-out;
   flex-shrink: 0;
   width: 12px;
@@ -91,11 +114,11 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-text-primary, #13343b);
+  color: var(--color-text-primary, #f5f5f5);
 }
 
 .group-count {
-  color: var(--color-text-muted, #a7a9a9);
+  color: var(--color-text-muted, #94a3b8);
   font-size: 13px;
   font-weight: 400;
 }
@@ -111,21 +134,22 @@
   appearance: none;
   width: 18px;
   height: 18px;
-  border: 2px solid var(--color-border, rgba(94, 82, 64, 0.2));
+  border: 2px solid rgba(94, 82, 64, 0.3);
   border-radius: 4px;
   cursor: pointer;
   position: relative;
   transition: all 150ms;
   flex-shrink: 0;
+  background: transparent;
 }
 
 .checkbox:hover {
-  border-color: var(--color-primary, #218d8d);
+  border-color: var(--color-primary, #32b8c6);
 }
 
 .checkbox:checked {
-  background: var(--color-primary, #218d8d);
-  border-color: var(--color-primary, #218d8d);
+  background: var(--color-primary, #32b8c6);
+  border-color: var(--color-primary, #32b8c6);
 }
 
 .checkbox:checked::after {
@@ -141,8 +165,8 @@
 }
 
 .checkbox.indeterminate {
-  background: var(--color-primary, #218d8d);
-  border-color: var(--color-primary, #218d8d);
+  background: var(--color-primary, #32b8c6);
+  border-color: var(--color-primary, #32b8c6);
 }
 
 .checkbox.indeterminate::after {
@@ -158,7 +182,7 @@
 }
 
 .checkbox:focus-visible {
-  outline: 2px solid var(--color-primary, #218d8d);
+  outline: 2px solid var(--color-primary, #32b8c6);
   outline-offset: 2px;
 }
 
@@ -183,25 +207,25 @@
 }
 
 .filter-item:hover {
-  background: var(--color-bg-hover, #f5f5f5);
+  background: rgba(50, 184, 198, 0.08);
 }
 
 .filter-item-label {
   font-size: 13px;
-  color: var(--color-text-secondary, #626c71);
+  color: var(--color-text-secondary, #cbd5e1);
   cursor: pointer;
 }
 
 .active-filters {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid var(--color-border, rgba(94, 82, 64, 0.2));
+  border-top: 1px solid rgba(94, 82, 64, 0.2);
 }
 
 .active-filters-title {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-muted, #a7a9a9);
+  color: var(--color-text-muted, #94a3b8);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -218,11 +242,11 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
-  background: var(--color-chip-bg, rgba(33, 128, 141, 0.1));
-  border: 1px solid var(--color-chip-border, rgba(33, 128, 141, 0.3));
+  background: rgba(50, 184, 198, 0.15);
+  border: 1px solid rgba(50, 184, 198, 0.3);
   border-radius: 6px;
   font-size: 12px;
-  color: var(--color-text-primary, #13343b);
+  color: var(--color-text-primary, #f5f5f5);
   animation: chipAppear 150ms ease-out;
 }
 
@@ -239,79 +263,14 @@
 
 .chip-remove {
   cursor: pointer;
-  color: var(--color-text-muted, #a7a9a9);
+  color: var(--color-text-muted, #94a3b8);
   font-size: 14px;
   line-height: 1;
   transition: color 150ms;
 }
 
 .chip-remove:hover {
-  color: var(--color-primary, #218d8d);
+  color: var(--color-primary, #32b8c6);
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .filter-tree {
-    background: var(--color-bg-secondary, #262828);
-    border-color: var(--color-border, rgba(119, 124, 124, 0.3));
-  }
-
-  .filter-title,
-  .group-label {
-    color: var(--color-text-primary, #f5f5f5);
-  }
-
-  .clear-all-btn {
-    color: var(--color-text-secondary, #cbd5e1);
-    border-color: var(--color-border, rgba(119, 124, 124, 0.3));
-  }
-
-  .clear-all-btn:hover {
-    background: var(--color-bg-hover, #334155);
-    border-color: var(--color-primary, #32b8c6);
-    color: var(--color-primary, #32b8c6);
-  }
-
-  .group-header:hover,
-  .filter-item:hover {
-    background: var(--color-bg-hover, #334155);
-  }
-
-  .expand-icon,
-  .group-count,
-  .active-filters-title {
-    color: var(--color-text-muted, #94a3b8);
-  }
-
-  .filter-item-label {
-    color: var(--color-text-secondary, #cbd5e1);
-  }
-
-  .checkbox {
-    border-color: var(--color-border, rgba(119, 124, 124, 0.3));
-  }
-
-  .checkbox:hover {
-    border-color: var(--color-primary, #32b8c6);
-  }
-
-  .checkbox:checked,
-  .checkbox.indeterminate {
-    background: var(--color-primary, #32b8c6);
-    border-color: var(--color-primary, #32b8c6);
-  }
-
-  .chip {
-    background: var(--color-chip-bg, rgba(50, 184, 198, 0.15));
-    border-color: var(--color-chip-border, rgba(50, 184, 198, 0.3));
-    color: var(--color-text-primary, #f5f5f5);
-  }
-
-  .chip-remove {
-    color: var(--color-text-muted, #94a3b8);
-  }
-
-  .chip-remove:hover {
-    color: var(--color-primary, #32b8c6);
-  }
-}
+/* Dark mode is now default - removed media query since app is dark */
