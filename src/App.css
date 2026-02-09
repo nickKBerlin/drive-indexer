@@ -1,35 +1,34 @@
 /* ============================================
    MODERN DARK THEME - DRIVE INDEXER
-   Inspired by the beautiful mockup design
+   Header, tabs, and neutral buttons now match mockup
    ============================================ */
 
 :root {
-  /* Primary Colors - Dark Blue/Slate */
-  --bg-primary: #0f172a;      /* Very dark blue - main background */
-  --bg-secondary: #1e293b;    /* Slightly lighter - cards, elevated */
-  --bg-tertiary: #334155;     /* Lighter still - hover states */
-  --bg-hover: #475569;        /* Hover backgrounds */
+  /* Primary Colors - Dark Neutral Greys (from mockup) */
+  --bg-primary: #0d0d0d;      /* App background (black-ish) */
+  --bg-secondary: #1a1a1a;    /* Header background (dark grey) */
+  --bg-tertiary: #1f1f1f;     /* Slightly lighter - table rows */
+  --bg-hover: #2f2f2f;        /* Hover backgrounds */
   
   /* Text Colors */
-  --text-primary: #f1f5f9;    /* Light blue-white - main text */
-  --text-secondary: #cbd5e1;  /* Medium gray-blue - secondary text */
-  --text-muted: #94a3b8;      /* Darker gray-blue - muted text */
+  --text-primary: #e0e0e0;    /* Main text (light grey/white) */
+  --text-secondary: #888888;  /* Secondary text */
+  --text-muted: #666666;      /* Muted title text */
   
   /* Accent Colors */
-  --accent-teal: #38bdf8;     /* Bright teal - primary accent */
-  --accent-teal-dark: #0284c7;/* Darker teal */
-  --accent-orange: #ff6b35;   /* Warm orange - secondary accent */
-  --accent-red: #ef4444;      /* Red - danger/delete */
+  --accent-teal: #38bdf8;     /* Kept for future primary actions (not used in header/tabs now) */
+  --accent-orange: #ff6b35;   /* Scan button etc. */
+  --accent-red: #ef4444;      /* Danger/delete */
   
   /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 10px 20px rgba(0, 0, 0, 0.6);
   
   /* Borders */
-  --border-color: rgba(148, 163, 184, 0.2);
-  --border-light: rgba(148, 163, 184, 0.1);
+  --border-color: #2a2a2a;
+  --border-light: #2a2a2a;
 }
 
 * {
@@ -61,71 +60,76 @@ body {
 }
 
 /* ============================================
-   HEADER - NAVIGATION BAR
+   HEADER - MATCHES MOCKUP
    ============================================ */
 
 .app-header {
-  background: var(--bg-secondary);
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, #161616 100%);
   border-bottom: 1px solid var(--border-color);
-  padding: 0;
+  padding: 20px 24px 0 24px;
   box-shadow: var(--shadow-md);
 }
 
 .app-header h1 {
-  margin: 0;
-  padding: 24px 40px;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.5px;
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
 }
 
 .error-message {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(239, 68, 68, 0.12);
   border: 1px solid var(--border-color);
   color: #fca5a5;
   padding: 12px 16px;
-  margin: 0 40px 20px 40px;
-  border-radius: 8px;
-  font-size: 14px;
+  margin: 12px 24px 16px 24px;
+  border-radius: 6px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
 /* ============================================
-   TAB NAVIGATION
+   TABS - EXACTLY LIKE MOCKUP
    ============================================ */
 
 .app-nav {
   display: flex;
-  gap: 0;
+  gap: 24px;
   background: transparent;
-  padding: 0 40px;
-  border-bottom: 2px solid var(--border-light);
-  margin-top: 20px;
+  padding: 0 24px 0 24px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .nav-button {
-  flex: 0 1 auto;
-  padding: 12px 0;
-  margin-right: 32px;
+  padding: 8px 0 10px 0;
   border: none;
-  background: transparent;
+  background: none;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  color: var(--text-muted);
-  border-bottom: 3px solid transparent;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
   position: relative;
+  transition: color var(--transition-fast, 150ms ease-out);
 }
 
 .nav-button:hover {
-  color: var(--text-secondary);
+  color: var(--text-primary);
 }
 
 .nav-button.active {
-  color: var(--accent-teal);
-  border-bottom-color: var(--accent-teal);
+  color: var(--text-primary);
+}
+
+.nav-button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 1px;
 }
 
 /* ============================================
@@ -134,7 +138,7 @@ body {
 
 .app-container {
   flex: 1;
-  padding: 32px 40px;
+  padding: 24px;
   width: 100%;
   overflow-y: auto;
 }
@@ -145,287 +149,84 @@ body {
 
 .tab-content {
   display: none;
-  animation: fadeIn 0.3s ease;
 }
 
 .tab-content.active {
   display: block;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* ============================================
-   SECTION HEADERS
-   ============================================ */
-
-.drives-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-  gap: 20px;
-}
-
-.drives-header h2 {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-  color: var(--text-primary);
-}
-
-/* ============================================
-   BUTTONS
+   BUTTONS - ADD DRIVE MATCHES MOCKUP
    ============================================ */
 
 .button {
-  padding: 10px 16px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background var(--transition-fast, 150ms ease-out),
+              color var(--transition-fast, 150ms ease-out),
+              transform 120ms ease-out;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   white-space: nowrap;
-  text-decoration: none;
 }
 
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
 }
 
 .button:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-/* PRIMARY - TEAL */
-.button.primary {
-  background: var(--accent-teal);
-  color: var(--bg-primary);
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-}
-
-.button.primary:hover:not(:disabled) {
-  background: var(--accent-teal);
-  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
-  filter: brightness(1.1);
-}
-
-/* SCAN - ORANGE */
-.button.scan {
-  background: var(--accent-orange);
-  color: white;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-}
-
-.button.scan:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.4);
-  filter: brightness(1.1);
-}
-
-/* RESCAN - TEAL */
-.button.rescan {
-  background: var(--accent-teal);
-  color: white;
-  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-}
-
-.button.rescan:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.4);
-  filter: brightness(1.1);
-}
-
-/* DELETE/DANGER - RED */
-.button.danger {
-  background: var(--accent-red);
-  color: white;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.button.danger:hover:not(:disabled) {
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
-  filter: brightness(1.1);
-}
-
-/* SECONDARY */
+/* Neutral "Add Drive" style from mockup */
 .button.secondary {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
+  background: #4a4a4a;
+  color: #888888;
 }
 
 .button.secondary:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: #555555;
+  color: #aaaaaa;
 }
 
-/* SMALL */
-.button.small {
-  padding: 6px 12px;
-  font-size: 13px;
+/* Existing variants kept for future use */
+.button.primary {
+  background: var(--accent-teal);
+  color: var(--bg-primary);
 }
 
-/* OUTLINE */
-.button.outline {
-  background: transparent;
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-}
-
-.button.outline:hover:not(:disabled) {
-  background: var(--bg-secondary);
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
+.button.danger {
+  background: var(--accent-red);
+  color: #ffffff;
 }
 
 /* ============================================
-   FORM ELEMENTS
+   RESPONSIVE
    ============================================ */
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-textarea,
-select {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  padding: 10px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  transition: all 0.2s ease;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--accent-teal);
-  background: var(--bg-secondary);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
-}
-
-label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-/* ============================================
-   SCROLLBAR
-   ============================================ */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-primary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bg-tertiary);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-hover);
-}
-
-/* ============================================
-   RESPONSIVE DESIGN
-   ============================================ */
-
-@media (max-width: 1024px) {
-  .app-header h1 {
-    font-size: 24px;
-  }
-
-  .app-container {
-    padding: 24px 32px;
-  }
-
-  .drives-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
 
 @media (max-width: 768px) {
-  .app-header h1 {
-    padding: 20px 20px;
-    font-size: 22px;
-  }
-
-  .app-nav {
-    padding: 0 20px;
-  }
-
-  .nav-button {
-    margin-right: 20px;
-    font-size: 14px;
-  }
-
-  .app-container {
-    padding: 20px;
-  }
-
-  .drives-header {
-    margin-bottom: 24px;
-  }
-
-  .button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-
-  .button.small {
-    padding: 5px 10px;
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .app-header h1 {
-    font-size: 18px;
-    padding: 16px 16px;
+  .app-header {
+    padding: 16px 16px 0 16px;
   }
 
   .app-nav {
     padding: 0 16px;
+    gap: 20px;
   }
 
   .app-container {
     padding: 16px;
   }
 
-  .nav-button {
-    margin-right: 16px;
-    font-size: 13px;
+  .app-header h1 {
+    font-size: 16px;
   }
 }
