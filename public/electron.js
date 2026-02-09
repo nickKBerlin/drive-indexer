@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const isDev = require('electron-is-dev');
 const Database = require('./database');
-const diskusage = require('diskusage');
+const checkDiskSpace = require('check-disk-space').default;
 
 let mainWindow;
 let db;
@@ -75,14 +75,15 @@ async function getDiskSpaceInfo(drivePath) {
       rootPath = drivePath.split(':')[0] + ':';
     }
     
-    const info = await diskusage.check(rootPath);
+    // check-disk-space returns { diskPath, free, size }
+    const diskSpace = await checkDiskSpace(rootPath);
     
     return {
-      total: info.total,
-      free: info.free,
-      used: info.total - info.free,
-      freePercentage: Math.round((info.free / info.total) * 100),
-      usedPercentage: Math.round(((info.total - info.free) / info.total) * 100),
+      total: diskSpace.size,
+      free: diskSpace.free,
+      used: diskSpace.size - diskSpace.free,
+      freePercentage: Math.round((diskSpace.free / diskSpace.size) * 100),
+      usedPercentage: Math.round(((diskSpace.size - diskSpace.free) / diskSpace.size) * 100),
     };
   } catch (err) {
     console.error('[Electron] Error getting disk space:', err);
