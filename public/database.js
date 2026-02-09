@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const fsSync = require('fs');
 const { app } = require('electron');
 const { v4: uuidv4 } = require('uuid');
+const checkDiskSpace = require('check-disk-space').default;
 
 class Database {
   constructor() {
@@ -232,12 +233,27 @@ class Database {
         throw new Error(`Path does not exist: ${normalizedPath}`);
       }
 
+      // Get real disk capacity and free space
+      let driveCapacity = 0;
+      let driveFreeSpace = 0;
+      try {
+        console.log('[Database] Checking disk space for:', normalizedPath);
+        const diskInfo = await checkDiskSpace(normalizedPath);
+        driveCapacity = diskInfo.size;  // Total drive capacity in bytes
+        driveFreeSpace = diskInfo.free;  // Free space in bytes
+        console.log('[Database] Drive capacity:', driveCapacity, 'bytes');
+        console.log('[Database] Drive free space:', driveFreeSpace, 'bytes');
+      } catch (err) {
+        console.error('[Database] Could not read disk space:', err);
+        // Continue with scan even if we can't get disk info
+      }
+
       console.log('[Database] Path exists, clearing old files...');
       await this.clearDriveFiles(driveId);
 
       const scannedAt = new Date().toISOString();
       let fileCount = 0;
-      let totalSize = 0;
+      let indexedSize = 0;  // This is sum of indexed files, not used in UI anymore
       let skippedCount = 0;
       const fileBatch = [];
       const BATCH_SIZE = 100;
@@ -379,7 +395,7 @@ class Database {
                 ]);
                 
                 fileCount++;
-                totalSize += stats.size;
+                indexedSize += stats.size;
                 
                 if (fileBatch.length >= BATCH_SIZE) {
                   await insertBatch();
@@ -408,12 +424,12 @@ class Database {
       console.log('[Database] Scan complete! Files:', fileCount, 'Skipped junk files:', skippedCount);
       console.log('[Database] Updating drive stats...');
       
-      // Update drive stats AND store scanPath
+      // Update drive stats with REAL disk capacity and free space
       const lastScanned = new Date().toISOString();
       await new Promise((resolve, reject) => {
         this.db.run(
-          `UPDATE drives SET fileCount = ?, totalSize = ?, lastScanned = ?, scanPath = ? WHERE id = ?`,
-          [fileCount, totalSize, lastScanned, normalizedPath, driveId],
+          `UPDATE drives SET fileCount = ?, totalSize = ?, freeSpace = ?, lastScanned = ?, scanPath = ? WHERE id = ?`,
+          [fileCount, driveCapacity, driveFreeSpace, lastScanned, normalizedPath, driveId],
           (err) => {
             if (err) reject(err);
             else resolve();
@@ -422,8 +438,9 @@ class Database {
       });
 
       console.log('[Database] ✅ Scan complete! Indexed:', fileCount, 'files | Filtered out:', skippedCount, 'junk files');
+      console.log('[Database] Drive capacity:', driveCapacity, '| Free space:', driveFreeSpace);
       progressCallback({ driveId, fileCount, status: 'Scan complete!' });
-      return { fileCount, totalSize, lastScanned };
+      return { fileCount, totalSize: driveCapacity, freeSpace: driveFreeSpace, lastScanned };
       
     } catch (err) {
       console.error('[Database] Error in async scanDrive:', err);
