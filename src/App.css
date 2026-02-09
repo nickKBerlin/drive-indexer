@@ -1,22 +1,32 @@
 /* ============================================
    MODERN DARK THEME - DRIVE INDEXER
-   Header, tabs, and neutral buttons now match mockup
+   Updated to match mockup exactly:
+   - Gray header (#2b2b2b)
+   - Black background (#050505)
+   - White text tabs with white underline (active)
+   - Gray text tabs (inactive)
+   - Gray "Add Drive" button with light gray text
    ============================================ */
 
 :root {
-  /* Primary Colors - Dark Neutral Greys (from mockup) */
-  --bg-primary: #0d0d0d;      /* App background (black-ish) */
-  --bg-secondary: #1a1a1a;    /* Header background (dark grey) */
-  --bg-tertiary: #1f1f1f;     /* Slightly lighter - table rows */
+  /* Primary Colors - Matching Mockup */
+  --bg-primary: #050505;      /* App background (pure black) */
+  --bg-secondary: #2b2b2b;    /* Header background (medium gray) */
+  --bg-tertiary: #1f1f1f;     /* Table rows, cards */
   --bg-hover: #2f2f2f;        /* Hover backgrounds */
   
-  /* Text Colors */
-  --text-primary: #e0e0e0;    /* Main text (light grey/white) */
-  --text-secondary: #888888;  /* Secondary text */
-  --text-muted: #666666;      /* Muted title text */
+  /* Text Colors - Matching Mockup */
+  --text-primary: #ffffff;    /* White for active tabs and main text */
+  --text-secondary: #7b7b7b;  /* Gray for inactive tabs */
+  --text-muted: #888888;      /* Muted text */
+  
+  /* Button Colors - Matching Mockup */
+  --btn-bg: #3b3b3b;          /* Gray button background */
+  --btn-text: #c8c8c8;        /* Light gray button text */
+  --btn-hover: #4a4a4a;       /* Button hover state */
   
   /* Accent Colors */
-  --accent-teal: #38bdf8;     /* Kept for future primary actions (not used in header/tabs now) */
+  --accent-teal: #38bdf8;     /* For future primary actions */
   --accent-orange: #ff6b35;   /* Scan button etc. */
   --accent-red: #ef4444;      /* Danger/delete */
   
@@ -27,7 +37,7 @@
   --shadow-xl: 0 10px 20px rgba(0, 0, 0, 0.6);
   
   /* Borders */
-  --border-color: #2a2a2a;
+  --border-color: #1a1a1a;
   --border-light: #2a2a2a;
 }
 
@@ -51,7 +61,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.app {
+.di-app-root {
   min-height: 100vh;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -60,114 +70,149 @@ body {
 }
 
 /* ============================================
-   HEADER - MATCHES MOCKUP
+   HEADER - GRAY BACKGROUND (MATCHES MOCKUP)
    ============================================ */
 
-.app-header {
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, #161616 100%);
+.di-header {
+  background: var(--bg-secondary); /* Gray header */
   border-bottom: 1px solid var(--border-color);
-  padding: 20px 24px 0 24px;
-  box-shadow: var(--shadow-md);
+  padding: 16px 24px 0 24px;
 }
 
-.app-header h1 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
+.di-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.di-title {
+  margin: 0;
+  font-size: 16px;
   font-weight: 500;
-  color: var(--text-muted);
-  letter-spacing: 0.5px;
+  color: var(--text-primary); /* White title */
+  letter-spacing: 0.02em;
 }
 
-.error-message {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid var(--border-color);
+.di-subtitle {
+  display: none; /* Hide subtitle in mockup */
+}
+
+.di-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.di-error-badge {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
   color: #fca5a5;
-  padding: 12px 16px;
-  margin: 12px 24px 16px 24px;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
 /* ============================================
-   TABS - EXACTLY LIKE MOCKUP
+   TABS - WHITE/GRAY WITH WHITE UNDERLINE (MATCHES MOCKUP)
    ============================================ */
 
-.app-nav {
+.di-tabs {
   display: flex;
   gap: 24px;
   background: transparent;
-  padding: 0 24px 0 24px;
+  padding: 0;
   border-bottom: 1px solid var(--border-color);
 }
 
-.nav-button {
-  padding: 8px 0 10px 0;
+.di-tab {
+  padding: 12px 0;
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  color: var(--text-secondary); /* Gray for inactive */
   position: relative;
-  transition: color var(--transition-fast, 150ms ease-out);
+  transition: color 150ms ease-out;
 }
 
-.nav-button:hover {
-  color: var(--text-primary);
+.di-tab:hover {
+  color: var(--text-primary); /* White on hover */
 }
 
-.nav-button.active {
-  color: var(--text-primary);
+.di-tab.active {
+  color: var(--text-primary); /* White for active */
 }
 
-.nav-button.active::after {
+.di-tab.active::after {
   content: '';
   position: absolute;
-  bottom: -8px;
+  bottom: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--text-primary);
-  border-radius: 1px;
+  background: var(--text-primary); /* White underline */
 }
 
 /* ============================================
-   MAIN CONTAINER
+   MAIN CONTAINER - BLACK BACKGROUND
    ============================================ */
 
-.app-container {
+.di-main {
   flex: 1;
   padding: 24px;
   width: 100%;
   overflow-y: auto;
+  background: var(--bg-primary); /* Black background */
 }
 
-.app-content {
+.di-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
   width: 100%;
 }
 
-.tab-content {
-  display: none;
+.di-column {
+  min-width: 0;
 }
 
-.tab-content.active {
-  display: block;
+.di-column-full {
+  grid-column: 1 / -1;
+}
+
+.di-card {
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+.di-card-table {
+  padding: 0;
+}
+
+.di-card-search {
+  padding: 24px;
 }
 
 /* ============================================
-   BUTTONS - ADD DRIVE MATCHES MOCKUP
+   BUTTONS - GRAY WITH LIGHT GRAY TEXT (MATCHES MOCKUP)
    ============================================ */
 
-.button {
-  padding: 8px 16px;
+.di-button {
+  padding: 6px 16px;
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: background var(--transition-fast, 150ms ease-out),
-              color var(--transition-fast, 150ms ease-out),
+  transition: background 150ms ease-out,
+              color 150ms ease-out,
               transform 120ms ease-out;
   display: inline-flex;
   align-items: center;
@@ -176,34 +221,33 @@ body {
   white-space: nowrap;
 }
 
-.button:disabled {
+.di-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
 }
 
-.button:hover:not(:disabled) {
+.di-button:hover:not(:disabled) {
   transform: translateY(-1px);
 }
 
-/* Neutral "Add Drive" style from mockup */
-.button.secondary {
-  background: #4a4a4a;
-  color: #888888;
+/* Gray "Add Drive" button style from mockup */
+.di-button-secondary {
+  background: var(--btn-bg);   /* Gray background */
+  color: var(--btn-text);      /* Light gray text */
 }
 
-.button.secondary:hover:not(:disabled) {
-  background: #555555;
-  color: #aaaaaa;
+.di-button-secondary:hover:not(:disabled) {
+  background: var(--btn-hover);
 }
 
-/* Existing variants kept for future use */
-.button.primary {
+/* Existing variants kept for other buttons */
+.di-button-primary {
   background: var(--accent-teal);
   color: var(--bg-primary);
 }
 
-.button.danger {
+.di-button-danger {
   background: var(--accent-red);
   color: #ffffff;
 }
@@ -213,20 +257,19 @@ body {
    ============================================ */
 
 @media (max-width: 768px) {
-  .app-header {
+  .di-header {
     padding: 16px 16px 0 16px;
   }
 
-  .app-nav {
-    padding: 0 16px;
+  .di-tabs {
     gap: 20px;
   }
 
-  .app-container {
+  .di-main {
     padding: 16px;
   }
 
-  .app-header h1 {
-    font-size: 16px;
+  .di-title {
+    font-size: 14px;
   }
 }
