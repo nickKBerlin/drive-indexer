@@ -78,7 +78,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
           <h2 className="di-section-title">Your Drives</h2>
           <p className="di-section-subtitle">Registered storage devices and their index status</p>
         </div>
-        <button className="di-button primary" onClick={() => setShowModal(true)}>
+        <button className="di-button di-button-secondary" onClick={() => setShowModal(true)}>
           + Add Drive
         </button>
       </div>
