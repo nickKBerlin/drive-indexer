@@ -42,10 +42,6 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     return Math.round((freeSpace / drive.totalSize) * 100);
   };
 
-  const getUsedSpacePercentage = (drive) => {
-    return 100 - calculateFreeSpacePercentage(drive);
-  };
-
   const handleScanClick = async (e, drive) => {
     e.stopPropagation();
     
@@ -109,9 +105,9 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                 const isScanning = scanningDrives && scanningDrives.has(drive.id);
                 const progress = scanProgress && scanProgress[drive.id];
                 const connectedStatus = getConnectedStatus(drive);
-                const usedPercentage = getUsedSpacePercentage(drive);
                 const fileCount = drive.fileCount || 0;
 
+                // Calculate free space and percentage
                 const freeBytes = calculateFreeSpace(drive);
                 const freePercent = calculateFreeSpacePercentage(drive);
                 const totalBytes = drive.totalSize || 0;
@@ -161,16 +157,11 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                         <div className="di-space-bar-track">
                           <div
                             className="di-space-bar-fill"
-                            style={{ width: `${usedPercentage}%` }}
+                            style={{ width: `${freePercent}%` }}
                           />
                         </div>
                         <div className="di-space-bar-labels">
-                          <span>
-                            {formatSize(freeBytes)} free
-                            {totalBytes > 0 && (
-                              <> of {formatSize(totalBytes)}</>
-                            )}
-                          </span>
+                          <span>{formatSize(freeBytes)} free</span>
                           <span>{freePercent}%</span>
                         </div>
                       </div>
