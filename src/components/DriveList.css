@@ -163,6 +163,11 @@
     text-overflow: ellipsis;
 }
 
+/* Special handling for space bar cell to prevent overflow */
+.di-table td.di-space-bar-cell {
+    overflow: visible;
+}
+
 .di-drive-cell {
     display: flex;
     align-items: center;
@@ -302,9 +307,12 @@
 
 .di-space-bar-labels {
     display: flex;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-secondary);
     white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
 }
 
 .di-space-bar-labels span {
