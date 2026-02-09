@@ -12,6 +12,10 @@ function SearchPanel({ drives, onSearch, results }) {
   const [actionedId, setActionedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  
+  // Collapsible state - both collapsed by default
+  const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
+  const [drivesExpanded, setDrivesExpanded] = useState(false);
 
   // Update selected drives when drives list changes
   React.useEffect(() => {
@@ -189,62 +193,88 @@ function SearchPanel({ drives, onSearch, results }) {
           </button>
         </div>
 
-        {/* Three-Column Filter Layout */}
-        <div className="filter-container">
-          {/* Left Column: Search Results Info */}
-          <div className="filter-section">
-            <h4>Search Scope</h4>
-            <div style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px', lineHeight: '1.6' }}>
-              {selectedCategories.length === 0 ? (
-                <p>All file types selected</p>
-              ) : (
-                <p>{selectedCategories.length} file type{selectedCategories.length !== 1 ? 's' : ''} selected</p>
-              )}
-              {selectedDrives.size === 0 ? (
-                <p style={{ marginTop: '8px' }}>No drives selected</p>
-              ) : selectedDrives.size === drives.length ? (
-                <p style={{ marginTop: '8px' }}>Searching all {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
-              ) : (
-                <p style={{ marginTop: '8px' }}>Searching {selectedDrives.size} of {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
-              )}
-              {results.length > 0 && (
-                <p style={{ marginTop: '16px', color: 'var(--color-primary, #32b8c6)', fontWeight: '600' }}>
-                  ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
-                </p>
-              )}
+        {/* Collapsible Filter Sections */}
+        <div className="filter-container-collapsible">
+          {/* Search Scope Info */}
+          <div className="filter-section-collapsible">
+            <div className="collapsible-header">
+              <h4>Search Scope</h4>
+            </div>
+            <div className="collapsible-content expanded">
+              <div style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px', lineHeight: '1.6' }}>
+                {selectedCategories.length === 0 ? (
+                  <p>All file types selected</p>
+                ) : (
+                  <p>{selectedCategories.length} file type{selectedCategories.length !== 1 ? 's' : ''} selected</p>
+                )}
+                {selectedDrives.size === 0 ? (
+                  <p style={{ marginTop: '8px' }}>No drives selected</p>
+                ) : selectedDrives.size === drives.length ? (
+                  <p style={{ marginTop: '8px' }}>Searching all {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
+                ) : (
+                  <p style={{ marginTop: '8px' }}>Searching {selectedDrives.size} of {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
+                )}
+                {results.length > 0 && (
+                  <p style={{ marginTop: '16px', color: 'var(--color-primary, #32b8c6)', fontWeight: '600' }}>
+                    ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Center Column: File Type Filters */}
-          <div className="filter-section">
-            <h4>File Types</h4>
-            <FilterTree onFilterChange={handleFilterChange} />
+          {/* File Types - Collapsible */}
+          <div className="filter-section-collapsible">
+            <div 
+              className="collapsible-header clickable"
+              onClick={() => setFileTypesExpanded(!fileTypesExpanded)}
+            >
+              <span className={`expand-arrow ${fileTypesExpanded ? 'expanded' : ''}`}>▶</span>
+              <h4>File Types</h4>
+              <span className="filter-summary">
+                {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
+              </span>
+            </div>
+            <div className={`collapsible-content ${fileTypesExpanded ? 'expanded' : ''}`}>
+              <FilterTree onFilterChange={handleFilterChange} />
+            </div>
           </div>
 
-          {/* Right Column: Drive Selection */}
-          <div className="filter-section">
-            <h4>Drives</h4>
-            <div className="checkbox-group">
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={selectedDrives.size === drives.length}
-                  onChange={toggleAllDrives}
-                />
-                <strong>All Drives</strong>
-              </label>
-              <hr className="filter-divider" />
-              {drives.map((drive) => (
-                <label key={drive.id} className="checkbox-label">
+          {/* Drives - Collapsible */}
+          <div className="filter-section-collapsible">
+            <div 
+              className="collapsible-header clickable"
+              onClick={() => setDrivesExpanded(!drivesExpanded)}
+            >
+              <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
+              <h4>Drives</h4>
+              <span className="filter-summary">
+                {selectedDrives.size === drives.length ? 'All' : `${selectedDrives.size}/${drives.length}`}
+              </span>
+            </div>
+            <div className={`collapsible-content ${drivesExpanded ? 'expanded' : ''}`}>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
                   <input
                     type="checkbox"
-                    checked={selectedDrives.has(drive.id)}
-                    onChange={() => toggleDrive(drive.id)}
+                    checked={selectedDrives.size === drives.length}
+                    onChange={toggleAllDrives}
                   />
-                  {drive.name}
-                  <span className="file-count">({drive.fileCount || 0})</span>
+                  <strong>All Drives</strong>
                 </label>
-              ))}
+                <hr className="filter-divider" />
+                {drives.map((drive) => (
+                  <label key={drive.id} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={selectedDrives.has(drive.id)}
+                      onChange={() => toggleDrive(drive.id)}
+                    />
+                    {drive.name}
+                    <span className="file-count">({drive.fileCount || 0})</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         </div>
