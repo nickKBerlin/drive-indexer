@@ -191,9 +191,9 @@ function SearchPanel({ drives, onSearch, results }) {
 
         {/* Three-Column Filter Layout */}
         <div className="filter-container">
-          {/* Left Column: Search Results Info (placeholder when empty) */}
+          {/* Left Column: Search Results Info */}
           <div className="filter-section">
-            <h4>📊 Search Scope</h4>
+            <h4>Search Scope</h4>
             <div style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px', lineHeight: '1.6' }}>
               {selectedCategories.length === 0 ? (
                 <p>All file types selected</p>
@@ -217,13 +217,13 @@ function SearchPanel({ drives, onSearch, results }) {
 
           {/* Center Column: File Type Filters */}
           <div className="filter-section">
-            <h4>📁 File Types</h4>
+            <h4>File Types</h4>
             <FilterTree onFilterChange={handleFilterChange} />
           </div>
 
           {/* Right Column: Drive Selection */}
           <div className="filter-section">
-            <h4>📀 Drives</h4>
+            <h4>Drives</h4>
             <div className="checkbox-group">
               <label className="checkbox-label">
                 <input
