@@ -282,6 +282,7 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
 
 .di-space-bar-track {
@@ -301,9 +302,14 @@
 
 .di-space-bar-labels {
     display: flex;
-    justify-content: space-between;
     font-size: 11px;
     color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.di-space-bar-labels span {
+    overflow: visible;
+    white-space: nowrap;
 }
 
 .di-icon-button {
