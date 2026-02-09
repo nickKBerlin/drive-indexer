@@ -176,8 +176,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                           />
                         </div>
                         <div className="di-space-bar-labels">
-                          <span>{formatSize(usedBytes)} used</span>
-                          <span>{freePercent}% free</span>
+                          <span>{formatSize(usedBytes)} used • {freePercent}% free</span>
                         </div>
                       </div>
                     </td>
