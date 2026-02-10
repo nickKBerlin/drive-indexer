@@ -316,28 +316,42 @@
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-primary, #f5f5f5);
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
-.results-section h3::before {
-  content: '📊';
-  font-size: 20px;
-}
-
-/* Results Table */
+/* Results Table - With Smart Column Widths */
 .results-table-container {
   background: var(--color-bg-secondary, #262828);
   border: 1px solid rgba(94, 82, 64, 0.2);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Custom horizontal scrollbar */
+.results-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.results-table-container::-webkit-scrollbar-track {
+  background: rgba(94, 82, 64, 0.1);
+  border-radius: 4px;
+}
+
+.results-table-container::-webkit-scrollbar-thumb {
+  background: rgba(94, 82, 64, 0.3);
+  border-radius: 4px;
+}
+
+.results-table-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 82, 64, 0.5);
 }
 
 .results-table {
   width: 100%;
+  min-width: 1200px;
   border-collapse: collapse;
   font-size: 14px;
+  table-layout: fixed;
 }
 
 .results-table thead {
@@ -353,7 +367,17 @@
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
+
+/* Smart Column Widths */
+.results-table thead th:nth-child(1) { width: 25%; } /* File Name */
+.results-table thead th:nth-child(2) { width: 13%; } /* Drive */
+.results-table thead th:nth-child(3) { width: 10%; } /* Size */
+.results-table thead th:nth-child(4) { width: 11%; } /* Type */
+.results-table thead th:nth-child(5) { width: 12%; } /* Modified */
+.results-table thead th:nth-child(6) { width: 23%; } /* Path */
+.results-table thead th:nth-child(7) { width: 6%; }  /* Actions */
 
 .results-table thead th.sortable {
   cursor: pointer;
@@ -381,6 +405,9 @@
 .results-table tbody td {
   padding: 12px 16px;
   color: var(--color-text-secondary, #cbd5e1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Table Cell Styles */
@@ -407,6 +434,7 @@
   font-size: 12px;
   font-weight: 500;
   color: var(--color-primary, #32b8c6);
+  white-space: nowrap;
 }
 
 .file-date {
@@ -417,10 +445,6 @@
 .file-path {
   color: var(--color-text-muted, #94a3b8);
   font-size: 13px;
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .actions-cell {
