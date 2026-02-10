@@ -4,59 +4,68 @@ import './FilterTree.css';
 // Category Hierarchy (matches your Drive Indexer categories)
 const categoryHierarchy = {
   'Images': {
-    'JPEG': ['.jpg', '.jpeg'],
-    'PNG': ['.png'],
-    'TIFF': ['.tiff', '.tif'],
-    'GIF': ['.gif'],
-    'WebP': ['.webp'],
-    'SVG': ['.svg'],
-    'RAW': ['.raw', '.cr2', '.nef', '.arw']
+    'JPEG': 'Image (JPEG)',
+    'PNG': 'Image (PNG)',
+    'TIFF': 'Image (TIFF)',
+    'GIF': 'Image (GIF)',
+    'WebP': 'Image (WebP)',
+    'BMP': 'Image (BMP)',
+    'SVG': 'Vector (SVG)',
+    'RAW': 'Image (RAW)'
   },
   'Video': {
-    'MP4': ['.mp4'],
-    'MOV': ['.mov'],
-    'AVI': ['.avi'],
-    'MKV': ['.mkv'],
-    'ProRes': ['.prores'],
-    'Professional': ['.mxf', '.dnxhd']
+    'MP4': 'Video (MP4)',
+    'MOV': 'Video (MOV)',
+    'AVI': 'Video (AVI)',
+    'MKV': 'Video (MKV)',
+    'ProRes': 'Video (ProRes)',
+    'M4V': 'Video (M4V)',
+    'Professional': 'Video (Professional)'
   },
   'Adobe Creative': {
-    'After Effects': ['.aep'],
-    'Premiere Pro': ['.prproj'],
-    'Photoshop': ['.psd', '.psb'],
-    'Illustrator': ['.ai'],
-    'Lightroom': ['.lrcat']
+    'After Effects': 'After Effects Project',
+    'Premiere Pro': 'Premiere Pro Project',
+    'Photoshop': 'Photoshop',
+    'Illustrator': 'Illustrator',
+    'PS Brushes': 'Photoshop Brush',
+    'PS Actions': 'Photoshop Action',
+    'PS Curves': 'Photoshop Curve',
+    'Swatches': 'Adobe Swatch'
   },
   'Audio': {
-    'WAV': ['.wav'],
-    'MP3': ['.mp3'],
-    'AIFF': ['.aiff'],
-    'FLAC': ['.flac'],
-    'AAC': ['.aac']
+    'WAV': 'Audio (WAV)',
+    'MP3': 'Audio (MP3)',
+    'AIFF': 'Audio (AIFF)',
+    'FLAC': 'Audio (FLAC)',
+    'AAC': 'Audio (AAC)',
+    'M4A': 'Audio (M4A)'
   },
   '3D Models': {
-    'Blender': ['.blend'],
-    'FBX': ['.fbx'],
-    'OBJ': ['.obj'],
-    'Cinema 4D': ['.c4d'],
-    'Maya': ['.ma', '.mb'],
-    'glTF': ['.gltf', '.glb'],
-    'STL': ['.stl']
+    'Blender': '3D Model (Blender)',
+    'FBX': '3D Model (FBX)',
+    'OBJ': '3D Model (OBJ)',
+    'Cinema 4D': '3D Model (Cinema 4D)',
+    'Maya': '3D Model (Maya)',
+    'glTF': '3D Model (glTF)',
+    'STL': '3D Model (STL)',
+    '3DS': '3D Model (3DS)'
   },
   'Archives': {
-    'ZIP': ['.zip'],
-    'RAR': ['.rar'],
-    '7-Zip': ['.7z'],
-    'TAR': ['.tar', '.gz']
+    'ZIP': 'Archive (ZIP)',
+    'RAR': 'Archive (RAR)',
+    '7-Zip': 'Archive (7-Zip)',
+    'TAR': 'Archive (TAR)',
+    'GZIP': 'Archive (GZIP)'
   },
   'Documents': {
-    'PDF': ['.pdf'],
-    'Word': ['.doc', '.docx'],
-    'Excel': ['.xls', '.xlsx']
+    'PDF': 'Document (PDF)',
+    'Word': 'Document (Word)',
+    'Excel': 'Document (Excel)',
+    'Text': 'Document (Text)'
   },
   'Fonts': {
-    'TrueType': ['.ttf'],
-    'OpenType': ['.otf']
+    'TrueType': 'Font (TrueType)',
+    'OpenType': 'Font (OpenType)'
   }
 };
 
@@ -78,9 +87,11 @@ const FilterTree = ({ onFilterChange }) => {
     const categories = [];
     Object.entries(selectedFilters).forEach(([groupName, items]) => {
       items.forEach(item => {
-        // Convert to Drive Indexer format: "Image (JPEG)", "Video (MP4)", etc.
-        const categoryName = groupName.endsWith('s') ? groupName.slice(0, -1) : groupName;
-        categories.push(`${categoryName} (${item})`);
+        // Get the actual database category name from the mapping
+        const dbCategoryName = categoryHierarchy[groupName][item];
+        if (dbCategoryName) {
+          categories.push(dbCategoryName);
+        }
       });
     });
     return categories;
@@ -275,7 +286,7 @@ const FilterTree = ({ onFilterChange }) => {
 
               {/* Filter Items (children) */}
               <div className={`filter-items ${isExpanded ? 'expanded' : ''}`}>
-                {Object.entries(items).map(([itemName, extensions]) => (
+                {Object.entries(items).map(([itemName, dbCategory]) => (
                   <div key={itemName} className="filter-item">
                     <label className="checkbox-wrapper">
                       <input
