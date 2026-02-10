@@ -12,6 +12,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [actionedId, setActionedId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [hasSearched, setHasSearched] = useState(false);
   
   // Collapsible state - both collapsed by default
   const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
@@ -24,6 +25,7 @@ function SearchPanel({ drives, onSearch, results }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
+    setHasSearched(true);
     onSearch(query, {
       driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
       categories: selectedCategories.length > 0 ? selectedCategories : null,
@@ -341,8 +343,8 @@ function SearchPanel({ drives, onSearch, results }) {
         </div>
       )}
 
-      {/* No Results Message */}
-      {query && results.length === 0 && (
+      {/* No Results Message - Only show after search is performed */}
+      {hasSearched && results.length === 0 && (
         <div className="no-results">No files found matching your search.</div>
       )}
 
