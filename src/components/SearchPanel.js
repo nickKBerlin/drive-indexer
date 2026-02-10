@@ -52,6 +52,13 @@ function SearchPanel({ drives, onSearch, results }) {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Extract file extension from filename
+  const getFileExtension = (fileName) => {
+    const lastDot = fileName.lastIndexOf('.');
+    if (lastDot === -1) return '-';
+    return fileName.substring(lastDot).toUpperCase();
+  };
+
   const showInFolder = async (file) => {
     try {
       console.log('[SearchPanel] Show in folder clicked');
@@ -314,9 +321,7 @@ function SearchPanel({ drives, onSearch, results }) {
                     <td className="file-name">{file.fileName}</td>
                     <td className="drive-name">{file.driveName}</td>
                     <td className="file-size">{formatSize(file.fileSize)}</td>
-                    <td className="file-type">
-                      <span className="category-badge">{file.category}</span>
-                    </td>
+                    <td className="file-type">{getFileExtension(file.fileName)}</td>
                     <td className="file-date">{formatDate(file.modifiedAt)}</td>
                     <td className="file-path" title={file.filePath}>{file.filePath}</td>
                     <td className="actions-cell">
