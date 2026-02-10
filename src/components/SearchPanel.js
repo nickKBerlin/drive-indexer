@@ -28,6 +28,10 @@ function SearchPanel({ drives, onSearch, results }) {
       driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
       categories: selectedCategories.length > 0 ? selectedCategories : null,
     });
+    
+    // Auto-close filter dropdowns after search to show results immediately
+    setFileTypesExpanded(false);
+    setDrivesExpanded(false);
   };
 
   // Callback when FilterTree changes
