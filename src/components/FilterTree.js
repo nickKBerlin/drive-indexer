@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './FilterTree.css';
 
 // Category Hierarchy (matches your Drive Indexer categories)
@@ -83,7 +83,7 @@ const FilterTree = ({ onFilterChange }) => {
   });
 
   // Convert selected filters to Drive Indexer category format
-  const getSelectedCategories = () => {
+  const getSelectedCategories = useCallback(() => {
     const categories = [];
     Object.entries(selectedFilters).forEach(([groupName, items]) => {
       items.forEach(item => {
@@ -95,14 +95,14 @@ const FilterTree = ({ onFilterChange }) => {
       });
     });
     return categories;
-  };
+  }, [selectedFilters]);
 
   // Notify parent when filters change
   useEffect(() => {
     if (onFilterChange) {
       onFilterChange(getSelectedCategories());
     }
-  }, [selectedFilters]);
+  }, [selectedFilters, getSelectedCategories, onFilterChange]);
 
   // Toggle group expansion
   const toggleGroup = (groupName) => {
@@ -193,6 +193,8 @@ const FilterTree = ({ onFilterChange }) => {
   const clearAllFilters = (e) => {
     // Prevent event from bubbling up to parent components
     e.stopPropagation();
+    // Prevent form submission
+    e.preventDefault();
     
     const newFilters = {};
     Object.keys(categoryHierarchy).forEach(group => {
@@ -242,7 +244,11 @@ const FilterTree = ({ onFilterChange }) => {
             </label>
           </div>
         </div>
-        <button className="clear-all-btn" onClick={clearAllFilters}>
+        <button 
+          type="button" 
+          className="clear-all-btn" 
+          onClick={clearAllFilters}
+        >
           Clear All
         </button>
       </div>
