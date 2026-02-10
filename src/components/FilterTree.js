@@ -190,7 +190,10 @@ const FilterTree = ({ onFilterChange }) => {
   };
 
   // Clear all filters
-  const clearAllFilters = () => {
+  const clearAllFilters = (e) => {
+    // Prevent event from bubbling up to parent components
+    e.stopPropagation();
+    
     const newFilters = {};
     Object.keys(categoryHierarchy).forEach(group => {
       newFilters[group] = new Set();
