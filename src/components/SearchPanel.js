@@ -311,14 +311,8 @@ function SearchPanel({ drives, onSearch, results }) {
               <tbody>
                 {sortedResults.map((file) => (
                   <tr key={file.id}>
-                    <td className="file-name">
-                      <span className="file-icon">📄</span>
-                      {file.fileName}
-                    </td>
-                    <td className="drive-name">
-                      <span className="drive-icon">📀</span>
-                      {file.driveName}
-                    </td>
+                    <td className="file-name">{file.fileName}</td>
+                    <td className="drive-name">{file.driveName}</td>
                     <td className="file-size">{formatSize(file.fileSize)}</td>
                     <td className="file-type">
                       <span className="category-badge">{file.category}</span>
