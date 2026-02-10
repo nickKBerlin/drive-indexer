@@ -74,8 +74,18 @@ function SearchPanel({ drives, onSearch, results }) {
         
         if (pathExists) {
           console.log('[SearchPanel] Path exists! Opening directly...');
-          // Direct open - no modal needed!
-          const fullPath = `${file.driveScanPath}/${file.filePath}`.replace(/\//g, '\\');
+          
+          // Normalize paths: convert both to forward slashes first, then to backslashes
+          const normalizedDrivePath = file.driveScanPath.replace(/\\/g, '/');
+          const normalizedFilePath = file.filePath.replace(/\\/g, '/');
+          
+          // Remove trailing slash from drive path if present
+          const cleanDrivePath = normalizedDrivePath.endsWith('/') 
+            ? normalizedDrivePath.slice(0, -1) 
+            : normalizedDrivePath;
+          
+          // Join paths and convert to Windows backslashes
+          const fullPath = `${cleanDrivePath}/${normalizedFilePath}`.replace(/\//g, '\\');
           console.log('[SearchPanel] Full path:', fullPath);
           
           await window.api.showInFolder(fullPath);
@@ -104,7 +114,9 @@ function SearchPanel({ drives, onSearch, results }) {
       console.log('[SearchPanel] File path:', selectedFile.filePath);
       
       const cleanLetter = driveLetter.trim().toUpperCase().replace(':', '');
-      const fullPath = `${cleanLetter}:\\${selectedFile.filePath.replace(/\//g, '\\')}`;
+      // Normalize file path to forward slashes first, then convert to backslashes
+      const normalizedFilePath = selectedFile.filePath.replace(/\\/g, '/');
+      const fullPath = `${cleanLetter}:/${normalizedFilePath}`.replace(/\//g, '\\');
       
       console.log('[SearchPanel] Full path constructed:', fullPath);
       
