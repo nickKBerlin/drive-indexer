@@ -32,6 +32,12 @@
     margin-bottom: 20px;
 }
 
+.di-header-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
 .di-section-title {
     font-size: 16px;
     color: var(--text-primary);
@@ -70,6 +76,21 @@
 
 .di-button.primary:hover {
     background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
+}
+
+/* Text-style button for Reset Warnings */
+.di-button-text {
+    background: transparent;
+    color: #888888;
+    border: 1px solid transparent;
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+.di-button-text:hover {
+    background: transparent;
+    color: var(--accent-turquoise);
+    border-color: transparent;
 }
 
 /* Remove Drive Button Styles */
