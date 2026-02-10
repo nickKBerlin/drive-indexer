@@ -318,7 +318,7 @@
   color: var(--color-text-primary, #f5f5f5);
 }
 
-/* Results Table - With Smart Column Widths and Compact Spacing */
+/* Results Table - Ultra-Compact with Tighter Spacing */
 .results-table-container {
   background: var(--color-bg-secondary, #262828);
   border: 1px solid rgba(94, 82, 64, 0.2);
@@ -360,7 +360,7 @@
 }
 
 .results-table thead th {
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: left;
   font-weight: 600;
   color: var(--color-primary, #32b8c6);
@@ -370,13 +370,13 @@
   white-space: nowrap;
 }
 
-/* Tighter Column Widths - Reduced gaps between Drive->Size and Modified->Path */
-.results-table thead th:nth-child(1) { width: 25%; } /* File Name */
-.results-table thead th:nth-child(2) { width: 12%; } /* Drive - reduced from 13% */
-.results-table thead th:nth-child(3) { width: 9%; }  /* Size - reduced from 10% */
-.results-table thead th:nth-child(4) { width: 11%; } /* Type */
-.results-table thead th:nth-child(5) { width: 11%; } /* Modified - reduced from 12% */
-.results-table thead th:nth-child(6) { width: 26%; } /* Path - increased to use saved space */
+/* Ultra-Tight Column Widths - Reduced all gaps further */
+.results-table thead th:nth-child(1) { width: 24%; } /* File Name - reduced from 25% */
+.results-table thead th:nth-child(2) { width: 11%; } /* Drive - reduced from 12% */
+.results-table thead th:nth-child(3) { width: 8%; }  /* Size - reduced from 9% */
+.results-table thead th:nth-child(4) { width: 9%; }  /* Type - reduced from 11% */
+.results-table thead th:nth-child(5) { width: 10%; } /* Modified - reduced from 11% */
+.results-table thead th:nth-child(6) { width: 32%; } /* Path - increased to use saved space */
 .results-table thead th:nth-child(7) { width: 6%; }  /* Actions */
 
 .results-table thead th.sortable {
@@ -402,9 +402,9 @@
   border-bottom: none;
 }
 
-/* Tighter row padding - reduced from 12px to 8px vertical */
+/* Ultra-tight row padding - reduced from 8px to 6px vertical */
 .results-table tbody td {
-  padding: 8px 12px;
+  padding: 6px 10px;
   color: var(--color-text-secondary, #cbd5e1);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -426,16 +426,11 @@
   color: var(--color-text-muted, #94a3b8);
 }
 
-.file-type .category-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: rgba(50, 184, 198, 0.15);
-  border: 1px solid rgba(50, 184, 198, 0.3);
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-primary, #32b8c6);
-  white-space: nowrap;
+/* Type column - plain text, no badge styling */
+.file-type {
+  color: var(--color-text-muted, #94a3b8);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
 }
 
 .file-date {
