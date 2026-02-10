@@ -72,6 +72,39 @@
     background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
 }
 
+/* Remove Drive Button Styles */
+.di-button-danger {
+    background: #2a2a2a;
+    color: #666666;
+    border: 1px solid #2a2a2a;
+    transition: all var(--transition-fast);
+}
+
+.di-button-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.di-button-danger:disabled:hover {
+    background: #2a2a2a;
+    color: #666666;
+    border-color: #2a2a2a;
+    transform: none;
+}
+
+.di-button-danger.active {
+    background: var(--accent-red);
+    color: white;
+    border-color: var(--accent-red);
+}
+
+.di-button-danger.active:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
 .di-empty-state {
     display: flex;
     flex-direction: column;
@@ -346,6 +379,14 @@
 
 .di-icon-button.danger:hover:not(:disabled) {
     background: rgba(239, 68, 68, 0.1);
+}
+
+/* Drive Footer with Remove Drive Button */
+.di-drive-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 0;
+    margin-top: 16px;
 }
 
 /* Scrollbar styling */
