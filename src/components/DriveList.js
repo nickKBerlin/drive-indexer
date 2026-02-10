@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './DriveList.css';
 import AddDriveModal from './AddDriveModal';
 import DeleteDriveModal from './DeleteDriveModal';
@@ -6,6 +6,35 @@ import DeleteDriveModal from './DeleteDriveModal';
 function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteDrive, scanningDrives, scanProgress, onScanDrive }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [driveConnectivity, setDriveConnectivity] = useState({});
+
+  // Check drive connectivity on mount and when drives change
+  useEffect(() => {
+    const checkDriveConnectivity = async () => {
+      const connectivity = {};
+      
+      for (const drive of drives) {
+        if (drive.scanPath) {
+          try {
+            const exists = await window.api.checkPathExists(drive.scanPath);
+            connectivity[drive.id] = exists ? 'connected' : 'offline';
+          } catch (err) {
+            console.error('[DriveList] Error checking path for drive', drive.name, err);
+            connectivity[drive.id] = 'offline';
+          }
+        } else {
+          // If no scanPath, drive has never been scanned
+          connectivity[drive.id] = 'offline';
+        }
+      }
+      
+      setDriveConnectivity(connectivity);
+    };
+
+    if (drives.length > 0) {
+      checkDriveConnectivity();
+    }
+  }, [drives]);
 
   const formatSize = (bytes) => {
     if (!bytes || bytes === 0) return '0 B';
@@ -26,7 +55,8 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   };
 
   const getConnectedStatus = (drive) => {
-    return drive.lastScanned ? 'connected' : 'offline';
+    // Use real-time connectivity status
+    return driveConnectivity[drive.id] || 'offline';
   };
 
   const calculateFreeSpace = (drive) => {
