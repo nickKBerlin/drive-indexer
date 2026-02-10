@@ -199,32 +199,29 @@ function SearchPanel({ drives, onSearch, results }) {
 
         {/* Collapsible Filter Sections */}
         <div className="filter-container-collapsible">
-          {/* Search Scope Info */}
-          <div className="filter-section-collapsible">
-            <div className="collapsible-header">
-              <h4>Search Scope</h4>
-            </div>
-            <div className="collapsible-content expanded">
-              <div style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px', lineHeight: '1.6' }}>
-                {selectedCategories.length === 0 ? (
-                  <p>All file types selected</p>
-                ) : (
-                  <p>{selectedCategories.length} file type{selectedCategories.length !== 1 ? 's' : ''} selected</p>
-                )}
-                {selectedDrives.size === 0 ? (
-                  <p style={{ marginTop: '8px' }}>No drives selected</p>
-                ) : selectedDrives.size === drives.length ? (
-                  <p style={{ marginTop: '8px' }}>Searching all {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
-                ) : (
-                  <p style={{ marginTop: '8px' }}>Searching {selectedDrives.size} of {drives.length} drive{drives.length !== 1 ? 's' : ''}</p>
-                )}
-                {results.length > 0 && (
-                  <p style={{ marginTop: '16px', color: 'var(--color-primary, #32b8c6)', fontWeight: '600' }}>
-                    ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
-                  </p>
-                )}
-              </div>
-            </div>
+          {/* Search Scope Info - Compact Horizontal Layout */}
+          <div className="search-scope-compact">
+            <span className="scope-item">
+              {selectedCategories.length === 0 
+                ? 'All file types selected' 
+                : `${selectedCategories.length} file type${selectedCategories.length !== 1 ? 's' : ''} selected`}
+            </span>
+            <span className="scope-separator">•</span>
+            <span className="scope-item">
+              {selectedDrives.size === 0 
+                ? 'No drives selected'
+                : selectedDrives.size === drives.length 
+                  ? `Searching all ${drives.length} drive${drives.length !== 1 ? 's' : ''}` 
+                  : `Searching ${selectedDrives.size} of ${drives.length} drive${drives.length !== 1 ? 's' : ''}`}
+            </span>
+            {results.length > 0 && (
+              <>
+                <span className="scope-separator">•</span>
+                <span className="scope-item scope-results">
+                  ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
+                </span>
+              </>
+            )}
           </div>
 
           {/* File Types - Collapsible */}
