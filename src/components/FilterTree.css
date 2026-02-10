@@ -51,7 +51,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
   padding-right: 8px;
 }
@@ -194,7 +194,28 @@
 }
 
 .filter-items.expanded {
-  max-height: 400px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Scrollbar for individual expanded filter groups */
+.filter-items.expanded::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-items.expanded::-webkit-scrollbar-track {
+  background: rgba(94, 82, 64, 0.1);
+  border-radius: 2px;
+}
+
+.filter-items.expanded::-webkit-scrollbar-thumb {
+  background: rgba(94, 82, 64, 0.3);
+  border-radius: 2px;
+}
+
+.filter-items.expanded::-webkit-scrollbar-thumb:hover {
+  background: rgba(94, 82, 64, 0.5);
 }
 
 .filter-item {
