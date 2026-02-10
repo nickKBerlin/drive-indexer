@@ -200,7 +200,7 @@ function SearchPanel({ drives, onSearch, results }) {
             className="search-input"
           />
           <button type="submit" className="button primary">
-            🔍 Search
+            Search
           </button>
         </div>
 
