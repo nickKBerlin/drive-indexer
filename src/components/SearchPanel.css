@@ -66,6 +66,34 @@
   box-shadow: 0 4px 12px rgba(50, 184, 198, 0.3);
 }
 
+/* Compact Search Scope - Horizontal Layout */
+.search-scope-compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--color-bg-secondary, #262828);
+  border: 1px solid rgba(94, 82, 64, 0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--color-text-muted, #94a3b8);
+  flex-wrap: wrap;
+}
+
+.scope-item {
+  white-space: nowrap;
+}
+
+.scope-separator {
+  color: rgba(94, 82, 64, 0.5);
+  font-size: 12px;
+}
+
+.scope-results {
+  color: var(--color-primary, #32b8c6);
+  font-weight: 600;
+}
+
 /* Collapsible Filter Container */
 .filter-container-collapsible {
   display: flex;
@@ -472,6 +500,16 @@
   .button {
     width: 100%;
   }
+  
+  .search-scope-compact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .scope-separator {
+    display: none;
+  }
 }
 
 /* Dark Mode Specific Adjustments */
@@ -488,6 +526,11 @@
   }
   
   .filter-section-collapsible {
+    background: var(--color-bg-secondary, #262828);
+    border-color: rgba(119, 124, 124, 0.2);
+  }
+  
+  .search-scope-compact {
     background: var(--color-bg-secondary, #262828);
     border-color: rgba(119, 124, 124, 0.2);
   }
