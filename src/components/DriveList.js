@@ -95,6 +95,11 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     }
   };
 
+  const handleResetWarnings = () => {
+    localStorage.removeItem('skipDeleteDriveWarning');
+    alert('Delete drive warnings have been re-enabled.');
+  };
+
   return (
     <div className="di-drive-panel">
       <div className="di-drive-header-row">
@@ -102,9 +107,18 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
           <h2 className="di-section-title">Your Drives</h2>
           <p className="di-section-subtitle">Registered storage devices and their index status</p>
         </div>
-        <button className="di-button di-button-secondary" onClick={() => setShowAddModal(true)}>
-          + Add Drive
-        </button>
+        <div className="di-header-buttons">
+          <button 
+            className="di-button di-button-text"
+            onClick={handleResetWarnings}
+            title="Re-enable all warning dialogs"
+          >
+            ⟳ Reset Warnings
+          </button>
+          <button className="di-button di-button-secondary" onClick={() => setShowAddModal(true)}>
+            + Add Drive
+          </button>
+        </div>
       </div>
 
       {showAddModal && (

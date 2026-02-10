@@ -76,16 +76,13 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  padding: 12px;
-  border-radius: 6px;
-  background: #0d0d0d;
-  border: 1px solid #2a2a2a;
-  transition: all 150ms ease;
+  padding: 8px 0;
+  margin-top: 4px;
+  transition: opacity 150ms ease;
 }
 
 .delete-drive-checkbox-label:hover {
-  border-color: #3a3a3a;
-  background: #151515;
+  opacity: 0.8;
 }
 
 .delete-drive-checkbox-label input[type="checkbox"] {
@@ -97,8 +94,8 @@
 }
 
 .delete-drive-checkbox-label span {
-  font-size: 13px;
-  color: #e0e0e0;
+  font-size: 12px;
+  color: #666666;
   user-select: none;
 }
 
