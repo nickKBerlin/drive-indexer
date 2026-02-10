@@ -31,9 +31,7 @@ function SearchPanel({ drives, onSearch, results }) {
       categories: selectedCategories.length > 0 ? selectedCategories : null,
     });
     
-    // Auto-close filter dropdowns after search to show results immediately
-    setFileTypesExpanded(false);
-    setDrivesExpanded(false);
+    // Keep filter dropdowns open after search so users can adjust filters easily
   };
 
   // Callback when FilterTree changes
