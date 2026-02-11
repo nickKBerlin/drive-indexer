@@ -8,32 +8,46 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
 
-  // Check drive connectivity on mount and when drives change
-  useEffect(() => {
-    const checkDriveConnectivity = async () => {
-      const connectivity = {};
-      
-      for (const drive of drives) {
-        if (drive.scanPath) {
-          try {
-            const exists = await window.api.checkPathExists(drive.scanPath);
-            connectivity[drive.id] = exists ? 'connected' : 'offline';
-          } catch (err) {
-            console.error('[DriveList] Error checking path for drive', drive.name, err);
-            connectivity[drive.id] = 'offline';
-          }
-        } else {
-          // If no scanPath, drive has never been scanned
+  // Check drive connectivity function
+  const checkDriveConnectivity = async () => {
+    const connectivity = {};
+    
+    for (const drive of drives) {
+      if (drive.scanPath) {
+        try {
+          const exists = await window.api.checkPathExists(drive.scanPath);
+          connectivity[drive.id] = exists ? 'connected' : 'offline';
+        } catch (err) {
+          console.error('[DriveList] Error checking path for drive', drive.name, err);
           connectivity[drive.id] = 'offline';
         }
+      } else {
+        // If no scanPath, drive has never been scanned
+        connectivity[drive.id] = 'offline';
       }
-      
-      setDriveConnectivity(connectivity);
-    };
+    }
+    
+    setDriveConnectivity(connectivity);
+  };
 
+  // Check connectivity on mount and when drives change
+  useEffect(() => {
     if (drives.length > 0) {
       checkDriveConnectivity();
     }
+  }, [drives]);
+
+  // Periodic polling for real-time connectivity updates
+  useEffect(() => {
+    if (drives.length === 0) return;
+
+    // Check connectivity every 5 seconds
+    const intervalId = setInterval(() => {
+      checkDriveConnectivity();
+    }, 5000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
   }, [drives]);
 
   const formatSize = (bytes) => {
