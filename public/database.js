@@ -184,6 +184,24 @@ class Database {
     });
   }
 
+  // Get a random sample of files for drive identity verification
+  getSampleFilesForDrive(driveId, limit = 5) {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        `SELECT fileName as name, filePath as path FROM files WHERE driveId = ? ORDER BY RANDOM() LIMIT ?`,
+        [driveId, limit],
+        (err, rows) => {
+          if (err) {
+            console.error('[Database] Error in getSampleFilesForDrive:', err);
+            reject(err);
+          } else {
+            resolve(rows || []);
+          }
+        }
+      );
+    });
+  }
+
   // Helper function to check if file/folder should be skipped
   shouldSkipEntry(name) {
     // macOS junk files and folders
