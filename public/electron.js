@@ -201,6 +201,36 @@ ipcMain.handle('get-disk-space', async (event, drivePath) => {
   }
 });
 
+// Get available drive letters on the system
+ipcMain.handle('get-available-drives', async (event) => {
+  try {
+    console.log('[IPC] get-available-drives');
+    const driveLetters = [];
+    
+    // Check drive letters from C to Z (skip A and B as they're typically floppy drives)
+    for (let i = 67; i <= 90; i++) { // ASCII 67 = 'C', 90 = 'Z'
+      const letter = String.fromCharCode(i);
+      const drivePath = `${letter}:`;
+      
+      try {
+        // Check if drive exists
+        if (fs.existsSync(drivePath)) {
+          driveLetters.push(letter);
+        }
+      } catch (err) {
+        // Drive doesn't exist or can't be accessed, skip it
+        continue;
+      }
+    }
+    
+    console.log('[IPC] Available drives:', driveLetters);
+    return driveLetters;
+  } catch (err) {
+    console.error('[IPC] Error in get-available-drives:', err);
+    throw err;
+  }
+});
+
 // Select Folder Dialog
 ipcMain.handle('select-folder', async (event) => {
   try {
