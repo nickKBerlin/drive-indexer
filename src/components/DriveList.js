@@ -8,51 +8,29 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
 
-  // Extract drive letter from path (e.g., "H:/path" -> "H")
-  const extractDriveLetter = (scanPath) => {
-    if (!scanPath) return null;
-    const match = scanPath.match(/^([A-Z]):/i);
-    return match ? match[1].toUpperCase() : null;
-  };
-
-  // Check drive connectivity function using actual system drive detection
+  // Check drive connectivity using actual file verification
   const checkDriveConnectivity = async () => {
     try {
-      console.log('========================================');
+      console.log('========================================')
       console.log('[DriveList] Checking drive connectivity...');
       console.log('[DriveList] Number of registered drives:', drives.length);
-      
-      // Get list of actually available drives on the system
-      const availableDrives = await window.api.getAvailableDrives();
-      console.log('[DriveList] Available drives from system:', availableDrives);
       
       const connectivity = {};
       
       for (const drive of drives) {
-        console.log(`\n[DriveList] Checking drive: "${drive.name}"`);
+        console.log(`\n[DriveList] Verifying drive: "${drive.name}"`);
         console.log(`[DriveList]   - ID: ${drive.id}`);
         console.log(`[DriveList]   - scanPath: ${drive.scanPath}`);
         
-        if (drive.scanPath) {
-          const driveLetter = extractDriveLetter(drive.scanPath);
-          console.log(`[DriveList]   - Extracted drive letter: ${driveLetter}`);
-          
-          if (driveLetter) {
-            // Check if this drive letter is in the list of available drives
-            const isConnected = availableDrives.includes(driveLetter);
-            connectivity[drive.id] = isConnected ? 'connected' : 'offline';
-            console.log(`[DriveList]   - Is "${driveLetter}" in available list? ${isConnected}`);
-            console.log(`[DriveList]   - Final status: ${connectivity[drive.id]}`);
-          } else {
-            connectivity[drive.id] = 'offline';
-            console.log(`[DriveList]   - Could not extract drive letter from path`);
-            console.log(`[DriveList]   - Final status: offline`);
-          }
+        if (drive.scanPath && drive.fileCount > 0) {
+          // Verify drive identity by checking if sample files exist
+          const isConnected = await window.api.verifyDriveIdentity(drive.id, drive.scanPath);
+          connectivity[drive.id] = isConnected ? 'connected' : 'offline';
+          console.log(`[DriveList]   - Verification result: ${isConnected ? 'CONNECTED' : 'OFFLINE'}`);
         } else {
-          // If no scanPath, drive has never been scanned
+          // If no scanPath or no files indexed, mark as offline
           connectivity[drive.id] = 'offline';
-          console.log(`[DriveList]   - No scanPath set`);
-          console.log(`[DriveList]   - Final status: offline`);
+          console.log(`[DriveList]   - No scanPath or no files indexed: OFFLINE`);
         }
       }
       
@@ -120,7 +98,6 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const getConnectedStatus = (drive) => {
     // Use real-time connectivity status
     const status = driveConnectivity[drive.id] || 'offline';
-    console.log(`[DriveList] getConnectedStatus for "${drive.name}" (ID: ${drive.id}): ${status}`);
     return status;
   };
 

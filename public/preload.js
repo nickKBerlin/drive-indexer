@@ -13,5 +13,6 @@ contextBridge.exposeInMainWorld('api', {
   showInFolder: (filePath) => ipcRenderer.invoke('show-in-folder', filePath),
   checkPathExists: (path) => ipcRenderer.invoke('check-path-exists', path),
   getAvailableDrives: () => ipcRenderer.invoke('get-available-drives'),
+  verifyDriveIdentity: (driveId, scanPath) => ipcRenderer.invoke('verify-drive-identity', driveId, scanPath),
   onScanProgress: (callback) => ipcRenderer.on('scan-progress', (event, data) => callback(data)),
 });
