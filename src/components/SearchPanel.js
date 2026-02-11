@@ -64,72 +64,69 @@ function SearchPanel({ drives, onSearch, results }) {
   const showInFolder = async (file) => {
     try {
       console.log('[SearchPanel] ========== Show in folder clicked ==========');
-      console.log('[SearchPanel] File object:', file);
-      console.log('[SearchPanel] File name:', file.fileName);
-      console.log('[SearchPanel] Drive name:', file.driveName);
-      console.log('[SearchPanel] File path:', file.filePath);
+      console.log('[SearchPanel] File:', file.fileName);
+      console.log('[SearchPanel] Drive:', file.driveName);
       console.log('[SearchPanel] Scan path from DB:', file.driveScanPath);
       
       // Check if required fields are present
       if (!file.fileName || !file.driveName || !file.filePath) {
         console.error('[SearchPanel] ERROR: Missing required file fields!');
-        console.error('[SearchPanel] fileName:', file.fileName);
-        console.error('[SearchPanel] driveName:', file.driveName);
-        console.error('[SearchPanel] filePath:', file.filePath);
         alert('Error: File information is incomplete. Please try rescanning the drive.');
         return;
       }
       
-      // Smart detection: Check if we have scanPath and if it still exists
+      // Smart detection: Check if we have scanPath and if the FULL FILE PATH still exists
       if (file.driveScanPath) {
-        console.log('[SearchPanel] Checking if path exists:', file.driveScanPath);
+        // Normalize paths: convert both to forward slashes first, then to backslashes
+        const normalizedDrivePath = file.driveScanPath.replace(/\\/g, '/');
+        const normalizedFilePath = file.filePath.replace(/\\/g, '/');
+        
+        // Remove trailing slash from drive path if present
+        const cleanDrivePath = normalizedDrivePath.endsWith('/') 
+          ? normalizedDrivePath.slice(0, -1) 
+          : normalizedDrivePath;
+        
+        // Join paths and convert to Windows backslashes
+        const fullPath = `${cleanDrivePath}/${normalizedFilePath}`.replace(/\//g, '\\');
+        console.log('[SearchPanel] Constructed full path:', fullPath);
         
         try {
-          const pathExists = await window.api.checkPathExists(file.driveScanPath);
-          console.log('[SearchPanel] Path exists result:', pathExists);
+          // Check if the FULL FILE PATH exists (not just the drive)
+          console.log('[SearchPanel] Checking if full file path exists...');
+          const fileExists = await window.api.checkPathExists(fullPath);
+          console.log('[SearchPanel] File exists result:', fileExists);
           
-          if (pathExists) {
-            console.log('[SearchPanel] Path exists! Opening directly...');
+          if (fileExists) {
+            console.log('[SearchPanel] File exists! Opening directly...');
             
-            // Normalize paths: convert both to forward slashes first, then to backslashes
-            const normalizedDrivePath = file.driveScanPath.replace(/\\/g, '/');
-            const normalizedFilePath = file.filePath.replace(/\\/g, '/');
-            
-            // Remove trailing slash from drive path if present
-            const cleanDrivePath = normalizedDrivePath.endsWith('/') 
-              ? normalizedDrivePath.slice(0, -1) 
-              : normalizedDrivePath;
-            
-            // Join paths and convert to Windows backslashes
-            const fullPath = `${cleanDrivePath}/${normalizedFilePath}`.replace(/\//g, '\\');
-            console.log('[SearchPanel] Full path:', fullPath);
-            
-            await window.api.showInFolder(fullPath);
-            
-            setActionedId(file.id);
-            setTimeout(() => setActionedId(null), 2000);
-            return;
+            try {
+              await window.api.showInFolder(fullPath);
+              console.log('[SearchPanel] Successfully opened file location');
+              
+              setActionedId(file.id);
+              setTimeout(() => setActionedId(null), 2000);
+              return;
+            } catch (openError) {
+              console.error('[SearchPanel] Error opening file location:', openError);
+              // Fall through to show modal
+            }
           } else {
-            console.log('[SearchPanel] Path no longer exists, showing modal...');
+            console.log('[SearchPanel] File no longer exists at original path, showing modal...');
           }
         } catch (pathCheckError) {
-          console.error('[SearchPanel] Error checking path:', pathCheckError);
+          console.error('[SearchPanel] Error checking file path:', pathCheckError);
           // Continue to show modal
         }
       } else {
         console.log('[SearchPanel] No driveScanPath in file object');
       }
       
-      // Fallback: Show modal
+      // Fallback: Show modal for manual drive selection
       console.log('[SearchPanel] Opening modal for manual drive selection');
-      console.log('[SearchPanel] Setting selectedFile to:', file);
       setSelectedFile(file);
-      console.log('[SearchPanel] Setting showModal to: true');
       setShowModal(true);
-      console.log('[SearchPanel] Modal state updated');
     } catch (err) {
       console.error('[SearchPanel] ERROR in showInFolder:', err);
-      console.error('[SearchPanel] Error stack:', err.stack);
       alert('Could not open folder: ' + err.message);
     }
   };
@@ -227,11 +224,6 @@ function SearchPanel({ drives, onSearch, results }) {
       setSortOrder('asc');
     }
   };
-
-  // Debug: Log modal state changes
-  React.useEffect(() => {
-    console.log('[SearchPanel] Modal state changed - showModal:', showModal, 'selectedFile:', selectedFile);
-  }, [showModal, selectedFile]);
 
   return (
     <div className="search-panel">
@@ -392,15 +384,13 @@ function SearchPanel({ drives, onSearch, results }) {
         <div className="no-results">No files found matching your search.</div>
       )}
 
-      {/* Drive Letter Modal - Debug render */}
-      {showModal && selectedFile ? (
+      {/* Drive Letter Modal */}
+      {showModal && selectedFile && (
         <DriveLetterModal
           file={selectedFile}
           onConfirm={handleConfirmDriveLetter}
           onCancel={handleCancelModal}
         />
-      ) : (
-        showModal && console.log('[SearchPanel] WARNING: showModal is true but selectedFile is null!')
       )}
     </div>
   );
