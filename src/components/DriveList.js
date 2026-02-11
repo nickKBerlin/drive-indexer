@@ -18,37 +18,50 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   // Check drive connectivity function using actual system drive detection
   const checkDriveConnectivity = async () => {
     try {
+      console.log('========================================');
       console.log('[DriveList] Checking drive connectivity...');
+      console.log('[DriveList] Number of registered drives:', drives.length);
       
       // Get list of actually available drives on the system
       const availableDrives = await window.api.getAvailableDrives();
-      console.log('[DriveList] Available drives on system:', availableDrives);
+      console.log('[DriveList] Available drives from system:', availableDrives);
       
       const connectivity = {};
       
       for (const drive of drives) {
+        console.log(`\n[DriveList] Checking drive: "${drive.name}"`);
+        console.log(`[DriveList]   - ID: ${drive.id}`);
+        console.log(`[DriveList]   - scanPath: ${drive.scanPath}`);
+        
         if (drive.scanPath) {
           const driveLetter = extractDriveLetter(drive.scanPath);
+          console.log(`[DriveList]   - Extracted drive letter: ${driveLetter}`);
           
           if (driveLetter) {
             // Check if this drive letter is in the list of available drives
             const isConnected = availableDrives.includes(driveLetter);
             connectivity[drive.id] = isConnected ? 'connected' : 'offline';
-            console.log(`[DriveList] Drive "${drive.name}" (${driveLetter}:) is ${isConnected ? 'connected' : 'offline'}`);
+            console.log(`[DriveList]   - Is "${driveLetter}" in available list? ${isConnected}`);
+            console.log(`[DriveList]   - Final status: ${connectivity[drive.id]}`);
           } else {
             connectivity[drive.id] = 'offline';
-            console.log(`[DriveList] Drive "${drive.name}" has invalid path:`, drive.scanPath);
+            console.log(`[DriveList]   - Could not extract drive letter from path`);
+            console.log(`[DriveList]   - Final status: offline`);
           }
         } else {
           // If no scanPath, drive has never been scanned
           connectivity[drive.id] = 'offline';
-          console.log(`[DriveList] Drive "${drive.name}" has no scanPath`);
+          console.log(`[DriveList]   - No scanPath set`);
+          console.log(`[DriveList]   - Final status: offline`);
         }
       }
       
+      console.log('\n[DriveList] Final connectivity map:', connectivity);
+      console.log('========================================\n');
       setDriveConnectivity(connectivity);
     } catch (err) {
-      console.error('[DriveList] Error checking drive connectivity:', err);
+      console.error('[DriveList] ERROR checking drive connectivity:', err);
+      console.error('[DriveList] Error stack:', err.stack);
       // On error, mark all as offline
       const connectivity = {};
       for (const drive of drives) {
@@ -60,6 +73,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
   // Check connectivity on mount and when drives change
   useEffect(() => {
+    console.log('[DriveList] useEffect triggered - drives changed, count:', drives.length);
     if (drives.length > 0) {
       checkDriveConnectivity();
     }
@@ -67,10 +81,14 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
   // Periodic polling for real-time connectivity updates (every 5 seconds)
   useEffect(() => {
-    if (drives.length === 0) return;
+    if (drives.length === 0) {
+      console.log('[DriveList] No drives to poll');
+      return;
+    }
 
     console.log('[DriveList] Setting up periodic connectivity polling (every 5 seconds)...');
     const intervalId = setInterval(() => {
+      console.log('[DriveList] Polling interval triggered...');
       checkDriveConnectivity();
     }, 5000);
 
@@ -101,7 +119,9 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
   const getConnectedStatus = (drive) => {
     // Use real-time connectivity status
-    return driveConnectivity[drive.id] || 'offline';
+    const status = driveConnectivity[drive.id] || 'offline';
+    console.log(`[DriveList] getConnectedStatus for "${drive.name}" (ID: ${drive.id}): ${status}`);
+    return status;
   };
 
   const calculateFreeSpace = (drive) => {
