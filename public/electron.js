@@ -231,6 +231,55 @@ ipcMain.handle('get-available-drives', async (event) => {
   }
 });
 
+// Verify drive identity by checking if sample files exist
+ipcMain.handle('verify-drive-identity', async (event, driveId, scanPath) => {
+  try {
+    console.log('[IPC] verify-drive-identity for drive:', driveId, 'at path:', scanPath);
+    
+    // Get a sample of files from this drive (limit to 5 for performance)
+    const sampleFiles = await db.getSampleFilesForDrive(driveId, 5);
+    
+    if (sampleFiles.length === 0) {
+      console.log('[IPC] No files indexed for drive', driveId, '- cannot verify');
+      // If no files are indexed, we can't verify identity
+      // Return false (offline) since we can't confirm it's the same drive
+      return false;
+    }
+    
+    console.log('[IPC] Checking', sampleFiles.length, 'sample files...');
+    
+    // Check if at least one of the sample files exists
+    let existingFilesCount = 0;
+    for (const file of sampleFiles) {
+      // Construct full path: scanPath + file.path
+      const normalizedScanPath = scanPath.replace(/\\/g, '/').replace(/\/$/, '');
+      const normalizedFilePath = file.path.replace(/\\/g, '/');
+      const fullPath = `${normalizedScanPath}/${normalizedFilePath}`.replace(/\//g, '\\');
+      
+      try {
+        if (fs.existsSync(fullPath)) {
+          existingFilesCount++;
+          console.log('[IPC] Sample file exists:', file.name);
+        }
+      } catch (err) {
+        // File doesn't exist or can't be accessed
+        continue;
+      }
+    }
+    
+    // If at least 50% of sample files exist, consider drive as connected
+    const threshold = Math.ceil(sampleFiles.length / 2);
+    const isConnected = existingFilesCount >= threshold;
+    
+    console.log(`[IPC] Drive identity verification: ${existingFilesCount}/${sampleFiles.length} files exist (threshold: ${threshold}) - ${isConnected ? 'CONNECTED' : 'OFFLINE'}`);
+    
+    return isConnected;
+  } catch (err) {
+    console.error('[IPC] Error in verify-drive-identity:', err);
+    return false;
+  }
+});
+
 // Select Folder Dialog
 ipcMain.handle('select-folder', async (event) => {
   try {
