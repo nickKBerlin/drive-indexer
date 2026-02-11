@@ -8,26 +8,54 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
 
-  // Check drive connectivity function
+  // Extract drive letter from path (e.g., "H:/path" -> "H")
+  const extractDriveLetter = (scanPath) => {
+    if (!scanPath) return null;
+    const match = scanPath.match(/^([A-Z]):/i);
+    return match ? match[1].toUpperCase() : null;
+  };
+
+  // Check drive connectivity function using actual system drive detection
   const checkDriveConnectivity = async () => {
-    const connectivity = {};
-    
-    for (const drive of drives) {
-      if (drive.scanPath) {
-        try {
-          const exists = await window.api.checkPathExists(drive.scanPath);
-          connectivity[drive.id] = exists ? 'connected' : 'offline';
-        } catch (err) {
-          console.error('[DriveList] Error checking path for drive', drive.name, err);
+    try {
+      console.log('[DriveList] Checking drive connectivity...');
+      
+      // Get list of actually available drives on the system
+      const availableDrives = await window.api.getAvailableDrives();
+      console.log('[DriveList] Available drives on system:', availableDrives);
+      
+      const connectivity = {};
+      
+      for (const drive of drives) {
+        if (drive.scanPath) {
+          const driveLetter = extractDriveLetter(drive.scanPath);
+          
+          if (driveLetter) {
+            // Check if this drive letter is in the list of available drives
+            const isConnected = availableDrives.includes(driveLetter);
+            connectivity[drive.id] = isConnected ? 'connected' : 'offline';
+            console.log(`[DriveList] Drive "${drive.name}" (${driveLetter}:) is ${isConnected ? 'connected' : 'offline'}`);
+          } else {
+            connectivity[drive.id] = 'offline';
+            console.log(`[DriveList] Drive "${drive.name}" has invalid path:`, drive.scanPath);
+          }
+        } else {
+          // If no scanPath, drive has never been scanned
           connectivity[drive.id] = 'offline';
+          console.log(`[DriveList] Drive "${drive.name}" has no scanPath`);
         }
-      } else {
-        // If no scanPath, drive has never been scanned
+      }
+      
+      setDriveConnectivity(connectivity);
+    } catch (err) {
+      console.error('[DriveList] Error checking drive connectivity:', err);
+      // On error, mark all as offline
+      const connectivity = {};
+      for (const drive of drives) {
         connectivity[drive.id] = 'offline';
       }
+      setDriveConnectivity(connectivity);
     }
-    
-    setDriveConnectivity(connectivity);
   };
 
   // Check connectivity on mount and when drives change
@@ -37,17 +65,20 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
     }
   }, [drives]);
 
-  // Periodic polling for real-time connectivity updates
+  // Periodic polling for real-time connectivity updates (every 5 seconds)
   useEffect(() => {
     if (drives.length === 0) return;
 
-    // Check connectivity every 5 seconds
+    console.log('[DriveList] Setting up periodic connectivity polling (every 5 seconds)...');
     const intervalId = setInterval(() => {
       checkDriveConnectivity();
     }, 5000);
 
     // Cleanup interval on unmount
-    return () => clearInterval(intervalId);
+    return () => {
+      console.log('[DriveList] Cleaning up connectivity polling');
+      clearInterval(intervalId);
+    };
   }, [drives]);
 
   const formatSize = (bytes) => {
