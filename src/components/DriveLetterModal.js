@@ -1,22 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './DriveLetterModal.css';
 
 function DriveLetterModal({ file, onConfirm, onCancel }) {
-  const [driveLetter, setDriveLetter] = useState('G');
-  const inputRef = useRef(null);
+  const [availableDrives, setAvailableDrives] = useState([]);
+  const [selectedDrive, setSelectedDrive] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Auto-focus input
-    setTimeout(() => {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }, 100);
+    // Fetch available drive letters
+    const fetchDrives = async () => {
+      try {
+        const drives = await window.api.getAvailableDrives();
+        setAvailableDrives(drives);
+        // Set first drive as default selection
+        if (drives.length > 0) {
+          setSelectedDrive(drives[0]);
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching available drives:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchDrives();
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (driveLetter.trim()) {
-      onConfirm(driveLetter.trim());
+    if (selectedDrive) {
+      onConfirm(selectedDrive);
     }
   };
 
@@ -48,21 +61,32 @@ function DriveLetterModal({ file, onConfirm, onCancel }) {
           
           <div className="drive-letter-input-section">
             <label htmlFor="driveLetter" className="drive-letter-label">
-              Enter current drive letter:
+              Select current drive letter:
             </label>
-            <input
-              ref={inputRef}
-              id="driveLetter"
-              type="text"
-              value={driveLetter}
-              onChange={(e) => setDriveLetter(e.target.value.toUpperCase())}
-              onKeyDown={handleKeyDown}
-              maxLength="1"
-              placeholder="G"
-              className="drive-letter-input"
-            />
+            
+            {loading ? (
+              <div className="drive-letter-loading">Loading available drives...</div>
+            ) : availableDrives.length === 0 ? (
+              <div className="drive-letter-error">No drives detected</div>
+            ) : (
+              <select
+                id="driveLetter"
+                value={selectedDrive}
+                onChange={(e) => setSelectedDrive(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="drive-letter-select"
+                autoFocus
+              >
+                {availableDrives.map((drive) => (
+                  <option key={drive} value={drive}>
+                    {drive}: (Drive {drive}:)
+                  </option>
+                ))}
+              </select>
+            )}
+            
             <p className="drive-letter-hint">
-              Example: Enter "G" for G:/ or "E" for E:/
+              Select the drive letter where your external drive is currently mounted
             </p>
           </div>
         </div>
@@ -71,7 +95,11 @@ function DriveLetterModal({ file, onConfirm, onCancel }) {
           <button className="drive-letter-btn cancel" onClick={onCancel}>
             Cancel
           </button>
-          <button className="drive-letter-btn confirm" onClick={handleSubmit}>
+          <button 
+            className="drive-letter-btn confirm" 
+            onClick={handleSubmit}
+            disabled={loading || !selectedDrive}
+          >
             Open Folder
           </button>
         </div>
