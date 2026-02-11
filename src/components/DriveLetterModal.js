@@ -23,60 +23,56 @@ function DriveLetterModal({ file, onConfirm, onCancel }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Escape') {
       onCancel();
+    } else if (e.key === 'Enter') {
+      handleSubmit(e);
     }
   };
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h3>🗂️ Show File in Folder</h3>
-          <button className="modal-close" onClick={onCancel}>
-            ✕
-          </button>
+    <div className="drive-letter-modal-overlay" onClick={onCancel}>
+      <div className="drive-letter-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="drive-letter-modal-header">
+          <h3>Show File in Folder</h3>
         </div>
         
-        <div className="modal-body">
-          <p className="modal-info">
+        <div className="drive-letter-modal-body">
+          <p className="drive-letter-info">
             <strong>Drive:</strong> {file.driveName}
           </p>
-          <p className="modal-info">
+          <p className="drive-letter-info">
             <strong>File:</strong> {file.fileName}
           </p>
-          <p className="modal-info file-path">
+          <p className="drive-letter-info drive-letter-path">
             <strong>Path:</strong> {file.filePath}
           </p>
           
-          <div className="drive-letter-input-group">
-            <label htmlFor="driveLetter">
+          <div className="drive-letter-input-section">
+            <label htmlFor="driveLetter" className="drive-letter-label">
               Enter current drive letter:
             </label>
-            <div className="input-with-suffix">
-              <input
-                ref={inputRef}
-                id="driveLetter"
-                type="text"
-                value={driveLetter}
-                onChange={(e) => setDriveLetter(e.target.value.toUpperCase())}
-                onKeyDown={handleKeyDown}
-                maxLength="2"
-                placeholder="G"
-                className="drive-letter-input"
-              />
-              <span className="input-suffix">:/</span>
-            </div>
-            <p className="input-hint">
+            <input
+              ref={inputRef}
+              id="driveLetter"
+              type="text"
+              value={driveLetter}
+              onChange={(e) => setDriveLetter(e.target.value.toUpperCase())}
+              onKeyDown={handleKeyDown}
+              maxLength="1"
+              placeholder="G"
+              className="drive-letter-input"
+            />
+            <p className="drive-letter-hint">
               Example: Enter "G" for G:/ or "E" for E:/
             </p>
           </div>
         </div>
         
-        <div className="modal-footer">
-          <button className="button secondary" onClick={onCancel}>
+        <div className="drive-letter-modal-footer">
+          <button className="drive-letter-btn cancel" onClick={onCancel}>
             Cancel
           </button>
-          <button className="button primary" onClick={handleSubmit}>
-            📂 Open Folder
+          <button className="drive-letter-btn confirm" onClick={handleSubmit}>
+            Open Folder
           </button>
         </div>
       </div>
