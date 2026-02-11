@@ -90,31 +90,56 @@
   margin-bottom: 10px;
 }
 
-.drive-letter-input {
+.drive-letter-select {
   width: 100%;
   padding: 12px 16px;
   background: #0f0f0f;
   border: 1px solid #2a2a2a;
   border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: #e0e0e0;
-  text-align: center;
-  text-transform: uppercase;
+  cursor: pointer;
   transition: all 150ms ease;
-  letter-spacing: 2px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23888888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
 }
 
-.drive-letter-input:focus {
+.drive-letter-select:hover {
+  border-color: #3a3a3a;
+  background-color: #1a1a1a;
+}
+
+.drive-letter-select:focus {
   outline: none;
   border-color: #2dd4bf;
   background: #1a1a1a;
   box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.1);
 }
 
-.drive-letter-input::placeholder {
-  color: #444444;
-  opacity: 1;
+.drive-letter-select option {
+  background: #1a1a1a;
+  color: #e0e0e0;
+  padding: 10px;
+}
+
+.drive-letter-loading,
+.drive-letter-error {
+  padding: 12px 16px;
+  background: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #888888;
+  text-align: center;
+}
+
+.drive-letter-error {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .drive-letter-hint {
@@ -142,13 +167,18 @@
   transition: all 150ms ease;
 }
 
+.drive-letter-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .drive-letter-btn.cancel {
   background: transparent;
   color: #888888;
   border: 1px solid #2a2a2a;
 }
 
-.drive-letter-btn.cancel:hover {
+.drive-letter-btn.cancel:hover:not(:disabled) {
   background: #1f1f1f;
   color: #aaaaaa;
   border-color: #3a3a3a;
@@ -159,7 +189,7 @@
   color: #0a0a0a;
 }
 
-.drive-letter-btn.confirm:hover {
+.drive-letter-btn.confirm:hover:not(:disabled) {
   background: #14b8a6;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(45, 212, 191, 0.3);
