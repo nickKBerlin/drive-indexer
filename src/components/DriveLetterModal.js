@@ -6,25 +6,49 @@ function DriveLetterModal({ file, onConfirm, onCancel }) {
   const [selectedDrive, setSelectedDrive] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch available drive letters
-    const fetchDrives = async () => {
-      try {
-        const drives = await window.api.getAvailableDrives();
-        setAvailableDrives(drives);
+  // Function to fetch available drive letters
+  const fetchDrives = async () => {
+    try {
+      console.log('[DriveLetterModal] Fetching available drives...');
+      const drives = await window.api.getAvailableDrives();
+      console.log('[DriveLetterModal] Available drives:', drives);
+      
+      setAvailableDrives(drives);
+      
+      // If we don't have a selected drive yet, or the selected drive is no longer available
+      if (!selectedDrive || !drives.includes(selectedDrive)) {
         // Set first drive as default selection
         if (drives.length > 0) {
           setSelectedDrive(drives[0]);
         }
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching available drives:', err);
-        setLoading(false);
       }
-    };
+      
+      setLoading(false);
+    } catch (err) {
+      console.error('[DriveLetterModal] Error fetching available drives:', err);
+      setLoading(false);
+    }
+  };
 
+  // Initial fetch on mount
+  useEffect(() => {
     fetchDrives();
   }, []);
+
+  // Periodic polling - refresh drive list every 3 seconds
+  useEffect(() => {
+    console.log('[DriveLetterModal] Setting up periodic polling (every 3 seconds)...');
+    const intervalId = setInterval(() => {
+      console.log('[DriveLetterModal] Polling for drive updates...');
+      fetchDrives();
+    }, 3000); // 3 seconds
+
+    // Cleanup interval when modal closes
+    return () => {
+      console.log('[DriveLetterModal] Cleaning up polling interval');
+      clearInterval(intervalId);
+    };
+  }, [selectedDrive]); // Include selectedDrive in dependencies
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -86,7 +110,9 @@ function DriveLetterModal({ file, onConfirm, onCancel }) {
             )}
             
             <p className="drive-letter-hint">
-              Select the drive letter where your external drive is currently mounted
+              {availableDrives.length > 0 
+                ? 'Select the drive letter where your external drive is currently mounted. List auto-updates every 3 seconds.' 
+                : 'Connect your drive and it will appear here automatically'}
             </p>
           </div>
         </div>
