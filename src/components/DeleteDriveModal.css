@@ -130,12 +130,12 @@
 }
 
 .delete-drive-btn.confirm {
-  background: #ef4444;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.5) 0%, rgba(239, 68, 68, 0.5) 100%);
   color: white;
 }
 
 .delete-drive-btn.confirm:hover {
-  background: #dc2626;
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.65) 0%, rgba(239, 68, 68, 0.65) 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
