@@ -47,12 +47,12 @@
   color: var(--color-primary, #32b8c6);
 }
 
+/* FIXED: Removed max-height to allow full expansion */
 .filter-groups {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 500px;
-  overflow-y: auto;
+  /* Removed max-height restriction - let parent handle scrolling */
   padding-right: 8px;
 }
 
@@ -186,6 +186,7 @@
   outline-offset: 2px;
 }
 
+/* FIXED: Increased max-height for expanded filter items */
 .filter-items {
   max-height: 0;
   overflow: hidden;
@@ -194,7 +195,8 @@
 }
 
 .filter-items.expanded {
-  max-height: 300px;
+  /* Increased from 300px to 800px to show all subcategories */
+  max-height: 800px;
   overflow-y: auto;
   padding-right: 4px;
 }
