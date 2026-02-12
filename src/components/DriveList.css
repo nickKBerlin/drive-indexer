@@ -12,6 +12,7 @@
     --accent-turquoise: #2dd4bf;
     --accent-red: #ef4444;
     --accent-green: #10b981;
+    --accent-yellow: #f59e0b;
     --free-space-gradient: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
     --transition-fast: 150ms ease-out;
     --transition-normal: 200ms ease-out;
@@ -315,6 +316,20 @@
     animation: pulse 2s infinite;
 }
 
+.di-status-pill.checking {
+    color: var(--accent-yellow);
+}
+
+.di-status-pill.checking::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-yellow);
+    animation: pulse-fast 1s infinite;
+}
+
 .di-status-pill.offline {
     color: var(--text-secondary);
 }
@@ -334,6 +349,15 @@
     }
     50% {
         opacity: 0.5;
+    }
+}
+
+@keyframes pulse-fast {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
     }
 }
 
