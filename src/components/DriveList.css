@@ -13,6 +13,8 @@
     --accent-red: #ef4444;
     --accent-green: #10b981;
     --accent-yellow: #f59e0b;
+    --accent-coral: #ff7f50;
+    --accent-orange: #f97316;
     --free-space-gradient: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
     --transition-fast: 150ms ease-out;
     --transition-normal: 200ms ease-out;
@@ -116,8 +118,8 @@
 
 /* Remove Drive Button Styles - with gradient and transparency */
 .di-button-danger {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.6) 0%, rgba(19, 78, 74, 0.6) 100%);
-    color: rgba(224, 224, 224, 0.6);
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.3) 0%, rgba(19, 78, 74, 0.3) 100%);
+    color: rgba(224, 224, 224, 0.5);
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -137,15 +139,15 @@
 }
 
 .di-button-danger.active {
-    background: linear-gradient(135deg, rgba(15, 118, 110, 0.85) 0%, rgba(19, 78, 74, 0.85) 100%);
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.5) 0%, rgba(239, 68, 68, 0.5) 100%);
     color: white;
     cursor: pointer;
 }
 
 .di-button-danger.active:hover {
-    background: linear-gradient(135deg, rgba(17, 94, 89, 0.95) 0%, rgba(13, 62, 58, 0.95) 100%);
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.65) 0%, rgba(239, 68, 68, 0.65) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
+    box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
 .di-empty-state {
