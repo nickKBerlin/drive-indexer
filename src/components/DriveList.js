@@ -8,9 +8,15 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
   const [driveLocations, setDriveLocations] = useState({});
+  const [isCheckingConnectivity, setIsCheckingConnectivity] = useState(false);
 
   // Smart drive connectivity check with auto-update
   const checkDriveConnectivity = async () => {
+    // Don't set checking state if we already have status (prevents flicker)
+    if (Object.keys(driveConnectivity).length === 0) {
+      setIsCheckingConnectivity(true);
+    }
+    
     try {
       console.log('========================================');
       console.log('[DriveList] Checking drive connectivity...');
@@ -85,6 +91,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
       
       setDriveConnectivity(connectivity);
       setDriveLocations(locations);
+      setIsCheckingConnectivity(false);
     } catch (err) {
       console.error('[DriveList] ERROR checking drive connectivity:', err);
       console.error('[DriveList] Error stack:', err.stack);
@@ -97,6 +104,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
       }
       setDriveConnectivity(connectivity);
       setDriveLocations(locations);
+      setIsCheckingConnectivity(false);
     }
   };
 
@@ -147,8 +155,19 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   };
 
   const getConnectedStatus = (drive) => {
-    // Use real-time connectivity status
-    return driveConnectivity[drive.id] || 'offline';
+    // If we have a status for this drive, use it
+    if (driveConnectivity[drive.id]) {
+      return driveConnectivity[drive.id];
+    }
+    
+    // If we're still checking and don't have status yet, show as checking
+    // This prevents the confusing "offline" flash on tab switch
+    if (isCheckingConnectivity) {
+      return 'checking';
+    }
+    
+    // Default to offline if no status and not checking
+    return 'offline';
   };
 
   const getCurrentLocation = (drive) => {
@@ -335,7 +354,8 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
                       <td>
                         <span className={`di-status-pill ${connectedStatus}`}>
-                          {connectedStatus === 'connected' ? 'Connected' : 'Offline'}
+                          {connectedStatus === 'connected' ? 'Connected' : 
+                           connectedStatus === 'checking' ? 'Checking...' : 'Offline'}
                         </span>
                       </td>
 
