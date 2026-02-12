@@ -79,52 +79,73 @@
     background: linear-gradient(135deg, #115e59 0%, #0d3e3a 100%);
 }
 
-/* Text-style button for Reset Warnings */
+/* Secondary button with gradient and transparency */
+.di-button-secondary {
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.7) 0%, rgba(19, 78, 74, 0.7) 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.di-button-secondary:hover {
+    background: linear-gradient(135deg, rgba(17, 94, 89, 0.85) 0%, rgba(13, 62, 58, 0.85) 100%);
+    transform: translateY(-1px);
+}
+
+/* Text-style button for Reset Warnings - now styled as link */
 .di-button-text {
     background: transparent;
     color: #888888;
-    border: 1px solid transparent;
-    padding: 8px 12px;
-    font-size: 12px;
+    border: none;
+    padding: 6px 0;
+    font-size: 11px;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color var(--transition-fast);
 }
 
 .di-button-text:hover {
     background: transparent;
     color: var(--accent-turquoise);
-    border-color: transparent;
 }
 
-/* Remove Drive Button Styles */
+/* Remove Drive Button Styles - with gradient and transparency */
 .di-button-danger {
-    background: #2a2a2a;
-    color: #666666;
-    border: 1px solid #2a2a2a;
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.6) 0%, rgba(19, 78, 74, 0.6) 100%);
+    color: rgba(224, 224, 224, 0.6);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: not-allowed;
+    font-size: 13px;
+    font-weight: 500;
     transition: all var(--transition-fast);
 }
 
 .di-button-danger:disabled {
-    opacity: 0.5;
+    opacity: 1;
     cursor: not-allowed;
 }
 
 .di-button-danger:disabled:hover {
-    background: #2a2a2a;
-    color: #666666;
-    border-color: #2a2a2a;
     transform: none;
 }
 
 .di-button-danger.active {
-    background: var(--accent-red);
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.85) 0%, rgba(19, 78, 74, 0.85) 100%);
     color: white;
-    border-color: var(--accent-red);
+    cursor: pointer;
 }
 
 .di-button-danger.active:hover {
-    background: #dc2626;
-    border-color: #dc2626;
+    background: linear-gradient(135deg, rgba(17, 94, 89, 0.95) 0%, rgba(13, 62, 58, 0.95) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    box-shadow: 0 4px 12px rgba(45, 212, 191, 0.2);
 }
 
 .di-empty-state {
@@ -426,10 +447,12 @@
     background: rgba(239, 68, 68, 0.1);
 }
 
-/* Drive Footer with Remove Drive Button */
+/* Drive Footer with Remove Drive Button and Reset Warnings */
 .di-drive-footer {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
     padding: 16px 0;
     margin-top: 16px;
 }
