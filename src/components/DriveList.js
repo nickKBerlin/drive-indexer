@@ -7,45 +7,96 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
+  const [driveLocations, setDriveLocations] = useState({});
 
-  // Check drive connectivity using actual file verification
+  // Smart drive connectivity check with auto-update
   const checkDriveConnectivity = async () => {
     try {
-      console.log('========================================')
+      console.log('========================================');
       console.log('[DriveList] Checking drive connectivity...');
       console.log('[DriveList] Number of registered drives:', drives.length);
       
       const connectivity = {};
+      const locations = {};
+      const drivesToUpdate = [];
       
       for (const drive of drives) {
-        console.log(`\n[DriveList] Verifying drive: "${drive.name}"`);
+        console.log(`\n[DriveList] Checking drive: "${drive.name}"`);
         console.log(`[DriveList]   - ID: ${drive.id}`);
-        console.log(`[DriveList]   - scanPath: ${drive.scanPath}`);
+        console.log(`[DriveList]   - Stored scanPath: ${drive.scanPath}`);
+        console.log(`[DriveList]   - File count: ${drive.fileCount}`);
         
-        if (drive.scanPath && drive.fileCount > 0) {
-          // Verify drive identity by checking if sample files exist
-          const isConnected = await window.api.verifyDriveIdentity(drive.id, drive.scanPath);
-          connectivity[drive.id] = isConnected ? 'connected' : 'offline';
-          console.log(`[DriveList]   - Verification result: ${isConnected ? 'CONNECTED' : 'OFFLINE'}`);
-        } else {
-          // If no scanPath or no files indexed, mark as offline
+        if (!drive.scanPath || !drive.fileCount || drive.fileCount === 0) {
+          console.log(`[DriveList]   - No scanPath or no files: OFFLINE`);
           connectivity[drive.id] = 'offline';
-          console.log(`[DriveList]   - No scanPath or no files indexed: OFFLINE`);
+          locations[drive.id] = null;
+          continue;
+        }
+        
+        // Use smart detection to find drive even if letter changed
+        const result = await window.api.findDriveLocation(drive.id);
+        
+        if (result.connected) {
+          console.log(`[DriveList]   - ✅ FOUND at: ${result.location}`);
+          connectivity[drive.id] = 'connected';
+          locations[drive.id] = result.location;
+          
+          // If location changed, mark for database update
+          if (result.location !== drive.scanPath) {
+            console.log(`[DriveList]   - 📍 LOCATION CHANGED!`);
+            console.log(`[DriveList]      Old: ${drive.scanPath}`);
+            console.log(`[DriveList]      New: ${result.location}`);
+            drivesToUpdate.push({
+              id: drive.id,
+              name: drive.name,
+              newPath: result.location
+            });
+          }
+        } else {
+          console.log(`[DriveList]   - ❌ NOT FOUND: OFFLINE`);
+          connectivity[drive.id] = 'offline';
+          locations[drive.id] = null;
         }
       }
       
-      console.log('\n[DriveList] Final connectivity map:', connectivity);
+      // Update database for drives with changed paths
+      if (drivesToUpdate.length > 0) {
+        console.log(`\n[DriveList] Updating ${drivesToUpdate.length} drive(s) with new paths...`);
+        for (const driveUpdate of drivesToUpdate) {
+          try {
+            await window.api.updateDrive(driveUpdate.id, { scanPath: driveUpdate.newPath });
+            console.log(`[DriveList] ✅ Updated "${driveUpdate.name}" path in database`);
+          } catch (err) {
+            console.error(`[DriveList] ❌ Failed to update "${driveUpdate.name}":`, err);
+          }
+        }
+        
+        // Reload drives to get updated data
+        console.log('[DriveList] Reloading drives from database...');
+        const updatedDrives = await window.api.getDrives();
+        // Trigger parent component update by calling a callback if available
+        // For now, just log - the next polling cycle will show updated data
+        console.log('[DriveList] Database updated, changes will reflect on next refresh');
+      }
+      
+      console.log('\n[DriveList] Final connectivity status:', connectivity);
+      console.log('[DriveList] Final locations:', locations);
       console.log('========================================\n');
+      
       setDriveConnectivity(connectivity);
+      setDriveLocations(locations);
     } catch (err) {
       console.error('[DriveList] ERROR checking drive connectivity:', err);
       console.error('[DriveList] Error stack:', err.stack);
       // On error, mark all as offline
       const connectivity = {};
+      const locations = {};
       for (const drive of drives) {
         connectivity[drive.id] = 'offline';
+        locations[drive.id] = null;
       }
       setDriveConnectivity(connectivity);
+      setDriveLocations(locations);
     }
   };
 
@@ -97,8 +148,12 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
 
   const getConnectedStatus = (drive) => {
     // Use real-time connectivity status
-    const status = driveConnectivity[drive.id] || 'offline';
-    return status;
+    return driveConnectivity[drive.id] || 'offline';
+  };
+
+  const getCurrentLocation = (drive) => {
+    // Get current detected location (may differ from stored scanPath)
+    return driveLocations[drive.id] || drive.scanPath;
   };
 
   const calculateFreeSpace = (drive) => {
@@ -237,6 +292,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
                   const isScanning = scanningDrives && scanningDrives.has(drive.id);
                   const progress = scanProgress && scanProgress[drive.id];
                   const connectedStatus = getConnectedStatus(drive);
+                  const currentLocation = getCurrentLocation(drive);
                   const fileCount = drive.fileCount || 0;
 
                   // Calculate used and free space
