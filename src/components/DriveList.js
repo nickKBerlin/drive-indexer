@@ -3,7 +3,7 @@ import './DriveList.css';
 import AddDriveModal from './AddDriveModal';
 import DeleteDriveModal from './DeleteDriveModal';
 
-function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteDrive, scanningDrives, scanProgress, onScanDrive }) {
+function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteDrive, scanningDrives, scanProgress, onScanDrive, onDrivesUpdated }) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [driveConnectivity, setDriveConnectivity] = useState({});
@@ -61,7 +61,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
       
       // Update database for drives with changed paths
       if (drivesToUpdate.length > 0) {
-        console.log(`\n[DriveList] Updating ${drivesToUpdate.length} drive(s) with new paths...`);
+        console.log(`\n[DriveList] 🔄 Updating ${drivesToUpdate.length} drive(s) with new paths...`);
         for (const driveUpdate of drivesToUpdate) {
           try {
             await window.api.updateDrive(driveUpdate.id, { scanPath: driveUpdate.newPath });
@@ -71,12 +71,12 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
           }
         }
         
-        // Reload drives to get updated data
-        console.log('[DriveList] Reloading drives from database...');
-        const updatedDrives = await window.api.getDrives();
-        // Trigger parent component update by calling a callback if available
-        // For now, just log - the next polling cycle will show updated data
-        console.log('[DriveList] Database updated, changes will reflect on next refresh');
+        // Trigger parent component to reload drives
+        if (onDrivesUpdated) {
+          console.log('[DriveList] 🔄 Triggering drive list refresh...');
+          await onDrivesUpdated();
+          console.log('[DriveList] ✅ Drive list refreshed!');
+        }
       }
       
       console.log('\n[DriveList] Final connectivity status:', connectivity);

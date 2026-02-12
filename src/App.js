@@ -169,6 +169,7 @@ function App() {
                   onScanDrive={handleScanDrive}
                   onDeleteDrive={handleDeleteDrive}
                   onAddDrive={handleAddDrive}
+                  onDrivesUpdated={loadDrives}
                 />
               </div>
             </section>
