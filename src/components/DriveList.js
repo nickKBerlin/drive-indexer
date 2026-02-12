@@ -254,13 +254,6 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
           <p className="di-section-subtitle">Registered storage devices and their index status</p>
         </div>
         <div className="di-header-buttons">
-          <button 
-            className="di-button di-button-text"
-            onClick={handleResetWarnings}
-            title="Re-enable all warning dialogs"
-          >
-            ⟳ Reset Warnings
-          </button>
           <button className="di-button di-button-secondary" onClick={() => setShowAddModal(true)}>
             + Add Drive
           </button>
@@ -385,7 +378,7 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
             </table>
           </div>
           
-          {/* Remove Drive Button - Bottom Right */}
+          {/* Footer with Remove Drive Button and Reset Warnings */}
           <div className="di-drive-footer">
             <button 
               className={`di-button di-button-danger ${selectedDrive ? 'active' : ''}`}
@@ -394,6 +387,13 @@ function DriveList({ drives, selectedDrive, onSelectDrive, onAddDrive, onDeleteD
               title={selectedDrive ? `Remove ${selectedDrive.name}` : 'Select a drive to remove'}
             >
               Remove Drive
+            </button>
+            <button 
+              className="di-button di-button-text"
+              onClick={handleResetWarnings}
+              title="Re-enable all warning dialogs"
+            >
+              Reset Warnings
             </button>
           </div>
         </>
