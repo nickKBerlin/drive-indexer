@@ -231,54 +231,162 @@ ipcMain.handle('get-available-drives', async (event) => {
   }
 });
 
-// Verify drive identity by checking if sample files exist
-ipcMain.handle('verify-drive-identity', async (event, driveId, scanPath) => {
+// Smart drive detection: finds drive even if drive letter changed
+ipcMain.handle('find-drive-location', async (event, driveId) => {
   try {
-    console.log('[IPC] verify-drive-identity for drive:', driveId, 'at path:', scanPath);
+    console.log('========================================');
+    console.log('[IPC] find-drive-location for drive:', driveId);
     
-    // Get a sample of files from this drive (limit to 5 for performance)
+    // Get drive info from database
+    const drives = await db.getDrives();
+    const drive = drives.find(d => d.id === driveId);
+    
+    if (!drive) {
+      console.log('[IPC] Drive not found in database:', driveId);
+      return { connected: false, location: null };
+    }
+    
+    console.log('[IPC] Drive name:', drive.name);
+    console.log('[IPC] Stored scanPath:', drive.scanPath);
+    console.log('[IPC] File count:', drive.fileCount);
+    
+    // If no files indexed, cannot verify
+    if (!drive.fileCount || drive.fileCount === 0) {
+      console.log('[IPC] No files indexed - cannot verify drive identity');
+      return { connected: false, location: null };
+    }
+    
+    // Get sample files for verification
     const sampleFiles = await db.getSampleFilesForDrive(driveId, 5);
     
     if (sampleFiles.length === 0) {
-      console.log('[IPC] No files indexed for drive', driveId, '- cannot verify');
-      // If no files are indexed, we can't verify identity
-      // Return false (offline) since we can't confirm it's the same drive
-      return false;
+      console.log('[IPC] No sample files available');
+      return { connected: false, location: null };
     }
     
-    console.log('[IPC] Checking', sampleFiles.length, 'sample files...');
+    console.log('[IPC] Got', sampleFiles.length, 'sample files for verification');
     
-    // Check if at least one of the sample files exists
-    let existingFilesCount = 0;
-    for (const file of sampleFiles) {
-      // Construct full path: scanPath + file.path
-      const normalizedScanPath = scanPath.replace(/\\/g, '/').replace(/\/$/, '');
-      const normalizedFilePath = file.path.replace(/\\/g, '/');
-      const fullPath = `${normalizedScanPath}/${normalizedFilePath}`.replace(/\//g, '\\');
+    // STEP 1: Try the stored scanPath first
+    if (drive.scanPath) {
+      console.log('\n[IPC] STEP 1: Checking stored path:', drive.scanPath);
+      const matchCount = await checkFilesAtPath(drive.scanPath, sampleFiles);
+      const threshold = Math.ceil(sampleFiles.length / 2);
       
-      try {
-        if (fs.existsSync(fullPath)) {
-          existingFilesCount++;
-          console.log('[IPC] Sample file exists:', file.name);
-        }
-      } catch (err) {
-        // File doesn't exist or can't be accessed
+      if (matchCount >= threshold) {
+        console.log(`[IPC] ✅ Drive found at stored location! (${matchCount}/${sampleFiles.length} files match)`);
+        console.log('========================================\n');
+        return { connected: true, location: drive.scanPath };
+      }
+      console.log(`[IPC] ❌ Drive not at stored location (only ${matchCount}/${sampleFiles.length} files match)`);
+    }
+    
+    // STEP 2: Search all available drive letters
+    console.log('\n[IPC] STEP 2: Searching all available drive letters...');
+    const availableDrives = await getAllAvailableDrives();
+    console.log('[IPC] Available drive letters:', availableDrives);
+    
+    // Extract the relative path structure (everything after drive letter)
+    const relativePath = drive.scanPath ? getRelativePath(drive.scanPath) : '';
+    console.log('[IPC] Relative path structure:', relativePath);
+    
+    // Try each available drive letter
+    for (const driveLetter of availableDrives) {
+      // Construct potential path: DriveLetter + relative structure
+      const testPath = relativePath ? `${driveLetter}:/${relativePath}` : `${driveLetter}:`;
+      
+      // Skip if this is the stored path (already tested)
+      if (drive.scanPath && testPath.toLowerCase() === drive.scanPath.toLowerCase()) {
         continue;
       }
+      
+      console.log(`\n[IPC] Testing drive ${driveLetter}: - ${testPath}`);
+      
+      // Check if path exists first (quick check)
+      if (!fs.existsSync(testPath)) {
+        console.log(`[IPC]   Path doesn't exist, skipping`);
+        continue;
+      }
+      
+      // Verify files at this location
+      const matchCount = await checkFilesAtPath(testPath, sampleFiles);
+      const threshold = Math.ceil(sampleFiles.length / 2);
+      
+      if (matchCount >= threshold) {
+        console.log(`[IPC] ✅ DRIVE FOUND at ${driveLetter}: (${matchCount}/${sampleFiles.length} files match)`);
+        console.log('========================================\n');
+        return { connected: true, location: testPath };
+      }
+      
+      console.log(`[IPC]   Only ${matchCount}/${sampleFiles.length} files match, continuing search...`);
     }
     
-    // If at least 50% of sample files exist, consider drive as connected
-    const threshold = Math.ceil(sampleFiles.length / 2);
-    const isConnected = existingFilesCount >= threshold;
+    // STEP 3: Not found anywhere
+    console.log('\n[IPC] ❌ Drive not found on any available drive letter');
+    console.log('========================================\n');
+    return { connected: false, location: null };
     
-    console.log(`[IPC] Drive identity verification: ${existingFilesCount}/${sampleFiles.length} files exist (threshold: ${threshold}) - ${isConnected ? 'CONNECTED' : 'OFFLINE'}`);
-    
-    return isConnected;
   } catch (err) {
-    console.error('[IPC] Error in verify-drive-identity:', err);
-    return false;
+    console.error('[IPC] Error in find-drive-location:', err);
+    return { connected: false, location: null };
   }
 });
+
+// Helper: Check how many sample files exist at a given path
+async function checkFilesAtPath(basePath, sampleFiles) {
+  let matchCount = 0;
+  
+  for (const file of sampleFiles) {
+    try {
+      // Construct full path
+      const normalizedBasePath = basePath.replace(/\\/g, '/').replace(/\/$/, '');
+      const normalizedFilePath = file.path.replace(/\\/g, '/');
+      const fullPath = `${normalizedBasePath}/${normalizedFilePath}`.replace(/\//g, '\\');
+      
+      if (fs.existsSync(fullPath)) {
+        matchCount++;
+        console.log(`[IPC]     ✓ Found: ${file.name}`);
+      }
+    } catch (err) {
+      // File doesn't exist or error accessing
+      continue;
+    }
+  }
+  
+  return matchCount;
+}
+
+// Helper: Extract relative path from full path (remove drive letter)
+function getRelativePath(fullPath) {
+  if (!fullPath) return '';
+  
+  // Remove drive letter and colon
+  // "H:/Projects/Work" -> "Projects/Work"
+  // "C:/Users/Name/Documents" -> "Users/Name/Documents"
+  const normalized = fullPath.replace(/\\/g, '/');
+  const match = normalized.match(/^[A-Z]:\/?(.*)$/i);
+  
+  return match ? match[1] : normalized;
+}
+
+// Helper: Get all available drives
+async function getAllAvailableDrives() {
+  const driveLetters = [];
+  
+  for (let i = 67; i <= 90; i++) { // ASCII 67 = 'C', 90 = 'Z'
+    const letter = String.fromCharCode(i);
+    const drivePath = `${letter}:`;
+    
+    try {
+      if (fs.existsSync(drivePath)) {
+        driveLetters.push(letter);
+      }
+    } catch (err) {
+      continue;
+    }
+  }
+  
+  return driveLetters;
+}
 
 // Select Folder Dialog
 ipcMain.handle('select-folder', async (event) => {
