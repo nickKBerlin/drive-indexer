@@ -15,7 +15,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
   
-  // Collapsible state - both collapsed by default
+  // Collapsible state - BOTH COLLAPSED BY DEFAULT (matching mockup)
   const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
   const [drivesExpanded, setDrivesExpanded] = useState(false);
 
@@ -33,7 +33,7 @@ function SearchPanel({ drives, onSearch, results }) {
       includeFolders: includeFolders,
     });
     
-    // Close filter dropdowns after search to show results
+    // Keep filters collapsed after search (matching mockup behavior)
     setFileTypesExpanded(false);
     setDrivesExpanded(false);
   };
@@ -235,7 +235,7 @@ function SearchPanel({ drives, onSearch, results }) {
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
-        {/* Top: Search Input */}
+        {/* Top Row: Search Input + Checkbox + Button */}
         <div className="search-input-group">
           <input
             type="text"
@@ -257,38 +257,38 @@ function SearchPanel({ drives, onSearch, results }) {
           </button>
         </div>
 
-        {/* Collapsible Filter Sections */}
-        <div className="filter-container-collapsible">
-          {/* Search Scope Info - Compact Horizontal Layout */}
-          <div className="search-scope-compact">
-            <span className="scope-item">
-              {selectedCategories.length === 0 
-                ? 'All file types selected' 
-                : `${selectedCategories.length} file type${selectedCategories.length !== 1 ? 's' : ''} selected`}
-            </span>
-            <span className="scope-separator">•</span>
-            <span className="scope-item">
-              {selectedDrives.size === 0 
-                ? 'No drives selected'
-                : selectedDrives.size === drives.length 
-                  ? `Searching all ${drives.length} drive${drives.length !== 1 ? 's' : ''}` 
-                  : `Searching ${selectedDrives.size} of ${drives.length} drive${drives.length !== 1 ? 's' : ''}`}
-            </span>
-            {results.length > 0 && (
-              <>
-                <span className="scope-separator">•</span>
-                <span className="scope-item scope-results">
-                  ✓ {fileCount} file{fileCount !== 1 ? 's' : ''}
-                  {folderCount > 0 && ` + ${folderCount} folder${folderCount !== 1 ? 's' : ''}`} found
-                </span>
-              </>
-            )}
-          </div>
+        {/* Info Line - Compact */}
+        <div className="search-scope-compact">
+          <span className="scope-item">
+            {selectedCategories.length === 0 
+              ? 'All file types selected' 
+              : `${selectedCategories.length} file type${selectedCategories.length !== 1 ? 's' : ''} selected`}
+          </span>
+          <span className="scope-separator">•</span>
+          <span className="scope-item">
+            {selectedDrives.size === 0 
+              ? 'No drives selected'
+              : selectedDrives.size === drives.length 
+                ? `Searching all ${drives.length} drive${drives.length !== 1 ? 's' : ''}` 
+                : `Searching ${selectedDrives.size} of ${drives.length} drive${drives.length !== 1 ? 's' : ''}`}
+          </span>
+          {results.length > 0 && (
+            <>
+              <span className="scope-separator">•</span>
+              <span className="scope-item scope-results">
+                ✓ {fileCount} file{fileCount !== 1 ? 's' : ''}
+                {folderCount > 0 && ` + ${folderCount} folder${folderCount !== 1 ? 's' : ''}`} found
+              </span>
+            </>
+          )}
+        </div>
 
+        {/* Collapsible Filters - COLLAPSED BY DEFAULT */}
+        <div className="filter-container-collapsible">
           {/* File Types - Collapsible */}
           <div className="filter-section-collapsible">
             <div 
-              className="collapsible-header clickable"
+              className="collapsible-header"
               onClick={() => setFileTypesExpanded(!fileTypesExpanded)}
             >
               <span className={`expand-arrow ${fileTypesExpanded ? 'expanded' : ''}`}>▶</span>
@@ -305,7 +305,7 @@ function SearchPanel({ drives, onSearch, results }) {
           {/* Drives - Collapsible */}
           <div className="filter-section-collapsible">
             <div 
-              className="collapsible-header clickable"
+              className="collapsible-header"
               onClick={() => setDrivesExpanded(!drivesExpanded)}
             >
               <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
