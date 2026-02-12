@@ -25,6 +25,7 @@ class Database {
           scanPath TEXT,
           lastScanned TEXT,
           fileCount INTEGER DEFAULT 0,
+          folderCount INTEGER DEFAULT 0,
           totalSize INTEGER DEFAULT 0,
           freeSpace INTEGER DEFAULT 0,
           createdAt TEXT
@@ -66,6 +67,21 @@ class Database {
         } else {
           console.log('[Database] ✅ freeSpace column already exists');
         }
+
+        // Migration: Add folderCount column if it doesn't exist
+        const hasFolderCount = columns.some(col => col.name === 'folderCount');
+        if (!hasFolderCount) {
+          console.log('[Database] ✨ Adding folderCount column (database migration)...');
+          this.db.run(`ALTER TABLE drives ADD COLUMN folderCount INTEGER DEFAULT 0`, (err) => {
+            if (err) {
+              console.error('[Database] Error adding folderCount column:', err);
+            } else {
+              console.log('[Database] ✅ folderCount column added successfully!');
+            }
+          });
+        } else {
+          console.log('[Database] ✅ folderCount column already exists');
+        }
       });
 
       // Files table
@@ -85,11 +101,26 @@ class Database {
         )
       `);
 
+      // Folders table - NEW!
+      this.db.run(`
+        CREATE TABLE IF NOT EXISTS folders (
+          id TEXT PRIMARY KEY,
+          driveId TEXT NOT NULL,
+          folderName TEXT NOT NULL,
+          folderPath TEXT NOT NULL,
+          scannedAt TEXT,
+          FOREIGN KEY (driveId) REFERENCES drives(id) ON DELETE CASCADE,
+          UNIQUE(driveId, folderPath)
+        )
+      `);
+
       // Create indices for fast searching
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_fileName ON files(fileName)`);
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_fileType ON files(fileType)`);
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_category ON files(category)`);
       this.db.run(`CREATE INDEX IF NOT EXISTS idx_driveId ON files(driveId)`);
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_folderName ON folders(folderName)`);
+      this.db.run(`CREATE INDEX IF NOT EXISTS idx_folder_driveId ON folders(driveId)`);
     });
   }
 
@@ -120,7 +151,7 @@ class Database {
             reject(err);
           } else {
             console.log('[Database] Drive added:', id);
-            resolve({ id, ...driveData, createdAt, fileCount: 0, totalSize: 0, freeSpace: 0 });
+            resolve({ id, ...driveData, createdAt, fileCount: 0, folderCount: 0, totalSize: 0, freeSpace: 0 });
           }
         }
       );
@@ -148,6 +179,10 @@ class Database {
       if (driveData.freeSpace !== undefined) {
         fields.push('freeSpace = ?');
         values.push(driveData.freeSpace);
+      }
+      if (driveData.scanPath !== undefined) {
+        fields.push('scanPath = ?');
+        values.push(driveData.scanPath);
       }
 
       if (fields.length === 0) {
@@ -266,14 +301,17 @@ class Database {
         // Continue with scan even if we can't get disk info
       }
 
-      console.log('[Database] Path exists, clearing old files...');
+      console.log('[Database] Path exists, clearing old files and folders...');
       await this.clearDriveFiles(driveId);
+      await this.clearDriveFolders(driveId);
 
       const scannedAt = new Date().toISOString();
       let fileCount = 0;
+      let folderCount = 0;
       let indexedSize = 0;  // This is sum of indexed files, not used in UI anymore
       let skippedCount = 0;
       const fileBatch = [];
+      const folderBatch = [];
       const BATCH_SIZE = 100;
 
       const getFileCategory = (ext) => {
@@ -357,7 +395,7 @@ class Database {
         return categoryMap[ext.toLowerCase()] || 'Other';
       };
 
-      const insertBatch = async () => {
+      const insertFileBatch = async () => {
         if (fileBatch.length === 0) return;
         
         return new Promise((resolve, reject) => {
@@ -366,6 +404,24 @@ class Database {
           
           this.db.run(
             `INSERT INTO files (id, driveId, fileName, filePath, fileSize, fileType, category, modifiedAt, scannedAt) VALUES ${placeholders}`,
+            values,
+            (err) => {
+              if (err) reject(err);
+              else resolve();
+            }
+          );
+        });
+      };
+
+      const insertFolderBatch = async () => {
+        if (folderBatch.length === 0) return;
+        
+        return new Promise((resolve, reject) => {
+          const placeholders = folderBatch.map(() => '(?, ?, ?, ?, ?)').join(',');
+          const values = folderBatch.flat();
+          
+          this.db.run(
+            `INSERT INTO folders (id, driveId, folderName, folderPath, scannedAt) VALUES ${placeholders}`,
             values,
             (err) => {
               if (err) reject(err);
@@ -392,6 +448,25 @@ class Database {
               if (entry.isDirectory()) {
                 // Skip system directories
                 if (!entry.name.startsWith('.') && entry.name !== 'System Volume Information' && entry.name !== '$RECYCLE.BIN') {
+                  // Index this folder
+                  const relativePath = path.relative(normalizedPath, fullPath);
+                  folderBatch.push([
+                    uuidv4(),
+                    driveId,
+                    entry.name,
+                    relativePath,
+                    scannedAt,
+                  ]);
+                  
+                  folderCount++;
+                  
+                  // Insert folder batch if needed
+                  if (folderBatch.length >= BATCH_SIZE) {
+                    await insertFolderBatch();
+                    folderBatch.length = 0;
+                  }
+                  
+                  // Recursively scan subdirectories
                   await scanDirectoryAsync(fullPath);
                 }
               } else {
@@ -416,10 +491,10 @@ class Database {
                 indexedSize += stats.size;
                 
                 if (fileBatch.length >= BATCH_SIZE) {
-                  await insertBatch();
+                  await insertFileBatch();
                   fileBatch.length = 0;
-                  console.log('[Database] Progress:', fileCount, 'files,', skippedCount, 'skipped');
-                  progressCallback({ driveId, fileCount, status: `Scanned ${fileCount} files...` });
+                  console.log('[Database] Progress:', fileCount, 'files,', folderCount, 'folders,', skippedCount, 'skipped');
+                  progressCallback({ driveId, fileCount, folderCount, status: `Scanned ${fileCount} files, ${folderCount} folders...` });
                 }
               }
             } catch (err) {
@@ -434,20 +509,23 @@ class Database {
       console.log('[Database] Starting async directory scan...');
       await scanDirectoryAsync(normalizedPath);
       
-      // Insert remaining files
+      // Insert remaining files and folders
       if (fileBatch.length > 0) {
-        await insertBatch();
+        await insertFileBatch();
+      }
+      if (folderBatch.length > 0) {
+        await insertFolderBatch();
       }
 
-      console.log('[Database] Scan complete! Files:', fileCount, 'Skipped junk files:', skippedCount);
+      console.log('[Database] Scan complete! Files:', fileCount, 'Folders:', folderCount, 'Skipped junk:', skippedCount);
       console.log('[Database] Updating drive stats...');
       
       // Update drive stats with REAL disk capacity and free space
       const lastScanned = new Date().toISOString();
       await new Promise((resolve, reject) => {
         this.db.run(
-          `UPDATE drives SET fileCount = ?, totalSize = ?, freeSpace = ?, lastScanned = ?, scanPath = ? WHERE id = ?`,
-          [fileCount, driveCapacity, driveFreeSpace, lastScanned, normalizedPath, driveId],
+          `UPDATE drives SET fileCount = ?, folderCount = ?, totalSize = ?, freeSpace = ?, lastScanned = ?, scanPath = ? WHERE id = ?`,
+          [fileCount, folderCount, driveCapacity, driveFreeSpace, lastScanned, normalizedPath, driveId],
           (err) => {
             if (err) reject(err);
             else resolve();
@@ -455,10 +533,10 @@ class Database {
         );
       });
 
-      console.log('[Database] ✅ Scan complete! Indexed:', fileCount, 'files | Filtered out:', skippedCount, 'junk files');
+      console.log('[Database] ✅ Scan complete! Indexed:', fileCount, 'files +', folderCount, 'folders | Filtered out:', skippedCount, 'junk');
       console.log('[Database] Drive capacity:', driveCapacity, '| Free space:', driveFreeSpace);
-      progressCallback({ driveId, fileCount, status: 'Scan complete!' });
-      return { fileCount, totalSize: driveCapacity, freeSpace: driveFreeSpace, lastScanned };
+      progressCallback({ driveId, fileCount, folderCount, status: 'Scan complete!' });
+      return { fileCount, folderCount, totalSize: driveCapacity, freeSpace: driveFreeSpace, lastScanned };
       
     } catch (err) {
       console.error('[Database] Error in async scanDrive:', err);
@@ -466,45 +544,96 @@ class Database {
     }
   }
 
+  // Search both files and folders
   searchFiles(query, filters = {}) {
     return new Promise((resolve, reject) => {
-      let sql = `
-        SELECT f.*, d.name as driveName, d.scanPath as driveScanPath
+      const includeFolders = filters.includeFolders || false;
+      const results = [];
+      
+      // Build file search query
+      let fileSql = `
+        SELECT f.*, d.name as driveName, d.scanPath as driveScanPath, 'file' as resultType
         FROM files f
         JOIN drives d ON f.driveId = d.id
         WHERE 1=1
       `;
-      const params = [];
+      const fileParams = [];
 
       if (query) {
-        sql += ` AND f.fileName LIKE ?`;
-        params.push(`%${query}%`);
+        fileSql += ` AND f.fileName LIKE ?`;
+        fileParams.push(`%${query}%`);
       }
 
       // Multi-category filter
       if (filters.categories && filters.categories.length > 0) {
         const placeholders = filters.categories.map(() => '?').join(',');
-        sql += ` AND f.category IN (${placeholders})`;
-        params.push(...filters.categories);
+        fileSql += ` AND f.category IN (${placeholders})`;
+        fileParams.push(...filters.categories);
       }
 
       // Multi-drive filter
       if (filters.driveIds && filters.driveIds.length > 0) {
         const placeholders = filters.driveIds.map(() => '?').join(',');
-        sql += ` AND f.driveId IN (${placeholders})`;
-        params.push(...filters.driveIds);
+        fileSql += ` AND f.driveId IN (${placeholders})`;
+        fileParams.push(...filters.driveIds);
       }
 
-      sql += ` ORDER BY f.fileName ASC LIMIT 1000`;
+      fileSql += ` ORDER BY f.fileName ASC LIMIT 1000`;
 
-      this.db.all(sql, params, (err, rows) => {
+      // Execute file search
+      this.db.all(fileSql, fileParams, (err, fileRows) => {
         if (err) {
           console.error('[Database] Error in searchFiles:', err);
           reject(err);
-        } else {
-          console.log('[Database] Search returned', rows?.length || 0, 'results');
-          resolve(rows || []);
+          return;
         }
+
+        results.push(...(fileRows || []));
+
+        // If not including folders, return only files
+        if (!includeFolders) {
+          console.log('[Database] File search returned', results.length, 'results');
+          resolve(results);
+          return;
+        }
+
+        // Build folder search query
+        let folderSql = `
+          SELECT f.id, f.driveId, f.folderName as fileName, f.folderPath as filePath, 
+                 NULL as fileSize, NULL as fileType, 'Folder' as category, NULL as modifiedAt,
+                 f.scannedAt, d.name as driveName, d.scanPath as driveScanPath, 'folder' as resultType
+          FROM folders f
+          JOIN drives d ON f.driveId = d.id
+          WHERE 1=1
+        `;
+        const folderParams = [];
+
+        if (query) {
+          folderSql += ` AND f.folderName LIKE ?`;
+          folderParams.push(`%${query}%`);
+        }
+
+        // Multi-drive filter
+        if (filters.driveIds && filters.driveIds.length > 0) {
+          const placeholders = filters.driveIds.map(() => '?').join(',');
+          folderSql += ` AND f.driveId IN (${placeholders})`;
+          folderParams.push(...filters.driveIds);
+        }
+
+        folderSql += ` ORDER BY f.folderName ASC LIMIT 1000`;
+
+        // Execute folder search
+        this.db.all(folderSql, folderParams, (err, folderRows) => {
+          if (err) {
+            console.error('[Database] Error in searchFolders:', err);
+            reject(err);
+            return;
+          }
+
+          results.push(...(folderRows || []));
+          console.log('[Database] Combined search returned', results.length, 'results (files + folders)');
+          resolve(results);
+        });
       });
     });
   }
@@ -537,6 +666,20 @@ class Database {
           reject(err);
         } else {
           console.log('[Database] Cleared', this.changes, 'files for drive:', driveId);
+          resolve({ deletedCount: this.changes });
+        }
+      });
+    });
+  }
+
+  clearDriveFolders(driveId) {
+    return new Promise((resolve, reject) => {
+      this.db.run(`DELETE FROM folders WHERE driveId = ?`, [driveId], function (err) {
+        if (err) {
+          console.error('[Database] Error in clearDriveFolders:', err);
+          reject(err);
+        } else {
+          console.log('[Database] Cleared', this.changes, 'folders for drive:', driveId);
           resolve({ deletedCount: this.changes });
         }
       });
