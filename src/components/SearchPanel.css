@@ -1,4 +1,18 @@
-/* Add styling for inline checkbox */
+/* Search Form Layout */
+.search-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* Search input should flex to fill space */
+.search-input {
+  flex: 1;
+  min-width: 300px;
+}
+
+/* Inline checkbox styling - compact */
 .checkbox-label-inline {
   display: inline-flex;
   align-items: center;
@@ -11,6 +25,8 @@
   cursor: pointer;
   transition: all 0.15s ease;
   user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .checkbox-label-inline:hover {
