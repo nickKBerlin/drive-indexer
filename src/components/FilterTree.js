@@ -82,6 +82,10 @@ const FilterTree = ({ onFilterChange }) => {
     return initial;
   });
 
+  // Detect platform for keyboard shortcut display
+  const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+  const modifierKey = isMac ? '⌘' : 'Ctrl'; // ⌘ for Mac, Ctrl for Windows/Linux
+
   // Convert selected filters to Drive Indexer category format
   const getSelectedCategories = useCallback(() => {
     const categories = [];
@@ -118,7 +122,23 @@ const FilterTree = ({ onFilterChange }) => {
   };
 
   // Toggle entire group selection
-  const toggleGroupSelection = (groupName, checked) => {
+  const toggleGroupSelection = (groupName, checked, event) => {
+    // NEW: Ctrl+Click to select ONLY this group
+    if (event && (event.ctrlKey || event.metaKey)) {
+      // Clear all other groups, select only this group
+      const newFilters = {};
+      Object.keys(categoryHierarchy).forEach(group => {
+        if (group === groupName) {
+          newFilters[group] = new Set(Object.keys(categoryHierarchy[group]));
+        } else {
+          newFilters[group] = new Set();
+        }
+      });
+      setSelectedFilters(newFilters);
+      return;
+    }
+
+    // Normal behavior: toggle this group
     setSelectedFilters(prev => ({
       ...prev,
       [groupName]: checked 
@@ -128,7 +148,23 @@ const FilterTree = ({ onFilterChange }) => {
   };
 
   // Toggle individual item selection
-  const toggleItemSelection = (groupName, itemName, checked) => {
+  const toggleItemSelection = (groupName, itemName, checked, event) => {
+    // NEW: Ctrl+Click to select ONLY this item
+    if (event && (event.ctrlKey || event.metaKey)) {
+      // Clear all filters, select only this item
+      const newFilters = {};
+      Object.keys(categoryHierarchy).forEach(group => {
+        if (group === groupName) {
+          newFilters[group] = new Set([itemName]);
+        } else {
+          newFilters[group] = new Set();
+        }
+      });
+      setSelectedFilters(newFilters);
+      return;
+    }
+
+    // Normal behavior: toggle this item
     setSelectedFilters(prev => {
       const newFilters = { ...prev };
       const groupSet = new Set(newFilters[groupName] || []);
@@ -205,7 +241,7 @@ const FilterTree = ({ onFilterChange }) => {
 
   // Remove individual chip
   const removeChip = (groupName, itemName) => {
-    toggleItemSelection(groupName, itemName, false);
+    toggleItemSelection(groupName, itemName, false, null);
   };
 
   // Get active chips (filters that are partially selected)
@@ -277,14 +313,15 @@ const FilterTree = ({ onFilterChange }) => {
                   ▶
                 </span>
                 <label 
-                  className="checkbox-wrapper" 
+                  className="checkbox-wrapper filter-checkbox-with-tooltip" 
                   onClick={(e) => e.stopPropagation()}
+                  data-tooltip={`${modifierKey}+Click to select only this group`}
                 >
                   <input
                     type="checkbox"
                     className={`checkbox ${isSomeGroupSelected ? 'indeterminate' : ''}`}
                     checked={isAllGroupSelected}
-                    onChange={(e) => toggleGroupSelection(groupName, e.target.checked)}
+                    onChange={(e) => toggleGroupSelection(groupName, e.target.checked, e.nativeEvent)}
                   />
                 </label>
                 <div className="group-label">
@@ -297,12 +334,15 @@ const FilterTree = ({ onFilterChange }) => {
               <div className={`filter-items ${isExpanded ? 'expanded' : ''}`}>
                 {Object.entries(items).map(([itemName, dbCategory]) => (
                   <div key={itemName} className="filter-item">
-                    <label className="checkbox-wrapper">
+                    <label 
+                      className="checkbox-wrapper filter-checkbox-with-tooltip"
+                      data-tooltip={`${modifierKey}+Click to select only this`}
+                    >
                       <input
                         type="checkbox"
                         className="checkbox"
                         checked={selectedItems.has(itemName)}
-                        onChange={(e) => toggleItemSelection(groupName, itemName, e.target.checked)}
+                        onChange={(e) => toggleItemSelection(groupName, itemName, e.target.checked, e.nativeEvent)}
                       />
                     </label>
                     <span className="filter-item-label">{itemName}</span>
