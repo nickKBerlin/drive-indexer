@@ -82,16 +82,18 @@ const FilterTree = ({ onFilterChange }) => {
     return initial;
   });
 
+  // State: tooltip visibility and position
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, text: '' });
+
   // Detect platform for keyboard shortcut display
   const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-  const modifierKey = isMac ? '⌘' : 'Ctrl'; // ⌘ for Mac, Ctrl for Windows/Linux
+  const modifierKey = isMac ? '⌘' : 'Ctrl';
 
   // Convert selected filters to Drive Indexer category format
   const getSelectedCategories = useCallback(() => {
     const categories = [];
     Object.entries(selectedFilters).forEach(([groupName, items]) => {
       items.forEach(item => {
-        // Get the actual database category name from the mapping
         const dbCategoryName = categoryHierarchy[groupName][item];
         if (dbCategoryName) {
           categories.push(dbCategoryName);
@@ -108,6 +110,22 @@ const FilterTree = ({ onFilterChange }) => {
     }
   }, [selectedFilters, getSelectedCategories, onFilterChange]);
 
+  // Handle tooltip show
+  const showTooltip = (e, text) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10,
+      text: text
+    });
+  };
+
+  // Handle tooltip hide
+  const hideTooltip = () => {
+    setTooltip({ visible: false, x: 0, y: 0, text: '' });
+  };
+
   // Toggle group expansion
   const toggleGroup = (groupName) => {
     setExpandedGroups(prev => {
@@ -123,9 +141,7 @@ const FilterTree = ({ onFilterChange }) => {
 
   // Toggle entire group selection
   const toggleGroupSelection = (groupName, checked, event) => {
-    // NEW: Ctrl+Click to select ONLY this group
     if (event && (event.ctrlKey || event.metaKey)) {
-      // Clear all other groups, select only this group
       const newFilters = {};
       Object.keys(categoryHierarchy).forEach(group => {
         if (group === groupName) {
@@ -138,7 +154,6 @@ const FilterTree = ({ onFilterChange }) => {
       return;
     }
 
-    // Normal behavior: toggle this group
     setSelectedFilters(prev => ({
       ...prev,
       [groupName]: checked 
@@ -149,9 +164,7 @@ const FilterTree = ({ onFilterChange }) => {
 
   // Toggle individual item selection
   const toggleItemSelection = (groupName, itemName, checked, event) => {
-    // NEW: Ctrl+Click to select ONLY this item
     if (event && (event.ctrlKey || event.metaKey)) {
-      // Clear all filters, select only this item
       const newFilters = {};
       Object.keys(categoryHierarchy).forEach(group => {
         if (group === groupName) {
@@ -164,7 +177,6 @@ const FilterTree = ({ onFilterChange }) => {
       return;
     }
 
-    // Normal behavior: toggle this item
     setSelectedFilters(prev => {
       const newFilters = { ...prev };
       const groupSet = new Set(newFilters[groupName] || []);
@@ -209,14 +221,12 @@ const FilterTree = ({ onFilterChange }) => {
     const allSelected = isAllSelected();
     
     if (allSelected) {
-      // Deselect all
       const newFilters = {};
       Object.keys(categoryHierarchy).forEach(group => {
         newFilters[group] = new Set();
       });
       setSelectedFilters(newFilters);
     } else {
-      // Select all
       const newFilters = {};
       Object.keys(categoryHierarchy).forEach(group => {
         newFilters[group] = new Set(Object.keys(categoryHierarchy[group]));
@@ -227,9 +237,7 @@ const FilterTree = ({ onFilterChange }) => {
 
   // Clear all filters
   const clearAllFilters = (e) => {
-    // Prevent event from bubbling up to parent components
     e.stopPropagation();
-    // Prevent form submission
     e.preventDefault();
     
     const newFilters = {};
@@ -244,7 +252,7 @@ const FilterTree = ({ onFilterChange }) => {
     toggleItemSelection(groupName, itemName, false, null);
   };
 
-  // Get active chips (filters that are partially selected)
+  // Get active chips
   const getActiveChips = () => {
     const chips = [];
     Object.entries(selectedFilters).forEach(([groupName, items]) => {
@@ -264,6 +272,20 @@ const FilterTree = ({ onFilterChange }) => {
 
   return (
     <div className="filter-tree">
+      {/* Floating Tooltip */}
+      {tooltip.visible && (
+        <div 
+          className="floating-tooltip"
+          style={{
+            left: `${tooltip.x}px`,
+            top: `${tooltip.y}px`,
+          }}
+        >
+          {tooltip.text}
+          <div className="tooltip-arrow" />
+        </div>
+      )}
+
       {/* Header */}
       <div className="filter-header">
         <div>
@@ -300,7 +322,6 @@ const FilterTree = ({ onFilterChange }) => {
 
           return (
             <div key={groupName} className="filter-group">
-              {/* Group Header */}
               <div 
                 className="group-header"
                 onClick={(e) => {
@@ -313,9 +334,10 @@ const FilterTree = ({ onFilterChange }) => {
                   ▶
                 </span>
                 <label 
-                  className="checkbox-wrapper filter-checkbox-with-tooltip" 
+                  className="checkbox-wrapper" 
                   onClick={(e) => e.stopPropagation()}
-                  data-tooltip={`${modifierKey}+Click to select only this group`}
+                  onMouseEnter={(e) => showTooltip(e, `${modifierKey}+Click to select only this group`)}
+                  onMouseLeave={hideTooltip}
                 >
                   <input
                     type="checkbox"
@@ -330,13 +352,13 @@ const FilterTree = ({ onFilterChange }) => {
                 </div>
               </div>
 
-              {/* Filter Items (children) */}
               <div className={`filter-items ${isExpanded ? 'expanded' : ''}`}>
                 {Object.entries(items).map(([itemName, dbCategory]) => (
                   <div key={itemName} className="filter-item">
                     <label 
-                      className="checkbox-wrapper filter-checkbox-with-tooltip"
-                      data-tooltip={`${modifierKey}+Click to select only this`}
+                      className="checkbox-wrapper"
+                      onMouseEnter={(e) => showTooltip(e, `${modifierKey}+Click to select only this`)}
+                      onMouseLeave={hideTooltip}
                     >
                       <input
                         type="checkbox"
