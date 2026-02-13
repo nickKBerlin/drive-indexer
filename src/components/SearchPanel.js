@@ -17,11 +17,13 @@ function SearchPanel({ drives, onSearch, results }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [activeFilterChips, setActiveFilterChips] = useState([]);
+  const [allFiltersChecked, setAllFiltersChecked] = useState(true);
+  const [someFiltersChecked, setSomeFiltersChecked] = useState(false);
   
   // Collapsible state
   const [drivesExpanded, setDrivesExpanded] = useState(false);
 
-  // Ref for auto-focus and FilterTree ref for controlling it
+  // Refs
   const searchInputRef = useRef(null);
   const filterTreeRef = useRef(null);
 
@@ -53,6 +55,28 @@ function SearchPanel({ drives, onSearch, results }) {
   const handleFilterChange = (categories, chips) => {
     setSelectedCategories(categories);
     setActiveFilterChips(chips || []);
+    
+    // Update master checkbox state
+    if (filterTreeRef.current) {
+      setAllFiltersChecked(filterTreeRef.current.isAllSelected());
+      setSomeFiltersChecked(filterTreeRef.current.isSomeSelected());
+    }
+  };
+
+  // Handle master checkbox toggle
+  const handleMasterCheckboxToggle = () => {
+    if (filterTreeRef.current) {
+      filterTreeRef.current.toggleMasterCheckbox();
+    }
+  };
+
+  // Handle clear all filters
+  const handleClearAllFilters = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (filterTreeRef.current) {
+      filterTreeRef.current.clearAllFilters();
+    }
   };
 
   const formatSize = (bytes) => {
@@ -231,7 +255,7 @@ function SearchPanel({ drives, onSearch, results }) {
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
-        {/* FIXED HEADER - Search Input, Scope, Filter Header */}
+        {/* FIXED HEADER - Search, Scope, Filter Header */}
         <div className="search-header">
           <div className="search-input-group">
             <input
@@ -281,22 +305,36 @@ function SearchPanel({ drives, onSearch, results }) {
             )}
           </div>
 
-          {/* File Types Header Section */}
-          <div className="filter-types-header">
-            <span className="filter-types-arrow">▼</span>
-            <h4>File Types</h4>
-            <span className="filter-summary">
-              {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
-            </span>
+          {/* Filter Controls Header */}
+          <div className="filter-controls-header">
+            <div className="filter-controls-left">
+              <h4 className="filter-controls-title">File Types</h4>
+              <label className="filter-master-checkbox">
+                <input
+                  type="checkbox"
+                  className={`checkbox ${someFiltersChecked && !allFiltersChecked ? 'indeterminate' : ''}`}
+                  checked={allFiltersChecked}
+                  onChange={handleMasterCheckboxToggle}
+                />
+                <span>All Filters</span>
+              </label>
+            </div>
+            <button 
+              type="button" 
+              className="clear-filters-btn"
+              onClick={handleClearAllFilters}
+            >
+              Clear All
+            </button>
           </div>
         </div>
 
-        {/* SCROLLABLE MIDDLE AREA - Only Filter Groups */}
+        {/* SCROLLABLE MIDDLE - Only Filter Groups */}
         <div className="filters-scrollable-area">
           <FilterTree 
             ref={filterTreeRef}
             onFilterChange={handleFilterChange} 
-            showHeader={true}
+            showHeader={false}
           />
         </div>
 

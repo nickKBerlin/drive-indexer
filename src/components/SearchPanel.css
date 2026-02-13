@@ -124,38 +124,109 @@
 }
 
 /* ============================================
-   FILE TYPES HEADER (in fixed header)
+   FILTER CONTROLS HEADER (in fixed header)
    ============================================ */
 
-.filter-types-header {
+.filter-controls-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   padding: 12px 16px;
   background: #1f1f1f;
   border: 1px solid #2a2a2a;
   border-radius: 6px;
 }
 
-.filter-types-arrow {
-  font-size: 10px;
-  color: #888888;
-  width: 12px;
-  flex-shrink: 0;
+.filter-controls-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.filter-types-header h4 {
+.filter-controls-title {
   margin: 0;
   font-size: 13px;
   font-weight: 500;
   color: #e0e0e0;
-  flex: 1;
 }
 
-.filter-summary {
-  font-size: 12px;
+.filter-master-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #e0e0e0;
+  user-select: none;
+}
+
+.filter-master-checkbox .checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #2a2a2a;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: all 150ms;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.filter-master-checkbox .checkbox:hover {
+  border-color: #2dd4bf;
+}
+
+.filter-master-checkbox .checkbox:checked {
+  background: #2dd4bf;
+  border-color: #2dd4bf;
+}
+
+.filter-master-checkbox .checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.filter-master-checkbox .checkbox.indeterminate {
+  background: #2dd4bf;
+  border-color: #2dd4bf;
+}
+
+.filter-master-checkbox .checkbox.indeterminate::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 7px;
+  width: 10px;
+  height: 2px;
+  background: white;
+  border: none;
+  transform: none;
+}
+
+.clear-filters-btn {
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #888888;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 150ms;
+  font-weight: 500;
+}
+
+.clear-filters-btn:hover {
+  background: rgba(45, 212, 191, 0.1);
+  border-color: #2dd4bf;
   color: #2dd4bf;
-  font-weight: 400;
 }
 
 /* ============================================
@@ -166,7 +237,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0 20px;
+  padding: 20px;
   background: #1a1a1a;
 }
 
@@ -275,7 +346,7 @@
   transition: color 150ms ease-out;
 }
 
-.drives-header:hover {
+.drives-header:hover h4 {
   color: #2dd4bf;
 }
 
@@ -285,6 +356,7 @@
   font-weight: 500;
   color: #e0e0e0;
   flex: 1;
+  transition: color 150ms;
 }
 
 .expand-arrow {
@@ -298,6 +370,12 @@
 
 .expand-arrow.expanded {
   transform: rotate(90deg);
+}
+
+.filter-summary {
+  font-size: 12px;
+  color: #2dd4bf;
+  font-weight: 400;
 }
 
 .drives-content {
