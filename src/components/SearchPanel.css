@@ -49,6 +49,38 @@
 }
 
 /* ============================================
+   FOLDER CHECKBOX - NEW
+   ============================================ */
+
+.folder-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #e0e0e0;
+  cursor: pointer;
+  padding: 8px 12px;
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all 150ms ease-out;
+  user-select: none;
+}
+
+.folder-checkbox-label:hover {
+  background: #282828;
+  border-color: #2dd4bf;
+}
+
+.folder-checkbox {
+  cursor: pointer;
+  accent-color: #2dd4bf;
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
    COMPACT INFO LINE
    ============================================ */
 
