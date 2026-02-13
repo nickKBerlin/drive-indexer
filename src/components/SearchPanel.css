@@ -1,24 +1,36 @@
 /* ============================================
-   SEARCH PANEL STYLES - UNIFIED WITH DRIVE TAB
+   SEARCH PANEL STYLES - FIXED HEADER/FOOTER LAYOUT
    ============================================ */
 
 .search-panel {
   width: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .search-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ============================================
-   SEARCH INPUT GROUP - TOP ROW
+   FIXED HEADER - SEARCH INPUT & SCOPE
    ============================================ */
+
+.search-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: #1a1a1a;
+  border-bottom: 1px solid #2a2a2a;
+  z-index: 100;
+}
 
 .search-input-group {
   display: flex;
@@ -49,7 +61,7 @@
 }
 
 /* ============================================
-   FOLDER CHECKBOX - NEW
+   FOLDER CHECKBOX
    ============================================ */
 
 .folder-checkbox-label {
@@ -112,8 +124,35 @@
 }
 
 /* ============================================
-   COLLAPSIBLE FILTER SECTIONS
+   SCROLLABLE MIDDLE AREA - FILTERS
    ============================================ */
+
+.filters-scrollable-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  background: #1a1a1a;
+}
+
+/* Custom scrollbar for filters area */
+.filters-scrollable-area::-webkit-scrollbar {
+  width: 10px;
+}
+
+.filters-scrollable-area::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+.filters-scrollable-area::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 5px;
+  border: 2px solid #1a1a1a;
+}
+
+.filters-scrollable-area::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
 
 .filter-container-collapsible {
   display: flex;
@@ -246,6 +285,70 @@
 }
 
 /* ============================================
+   FIXED FOOTER - ACTIVE FILTERS
+   ============================================ */
+
+.active-filters-footer {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  background: #1f1f1f;
+  border-top: 1px solid #2a2a2a;
+  z-index: 100;
+}
+
+.active-filters-footer .active-filters-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.active-filters-footer .chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.active-filters-footer .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(45, 212, 191, 0.15);
+  border: 1px solid rgba(45, 212, 191, 0.3);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #e0e0e0;
+  animation: chipAppear 150ms ease-out;
+}
+
+@keyframes chipAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.active-filters-footer .chip-remove {
+  cursor: pointer;
+  color: #888888;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 150ms;
+  font-weight: bold;
+}
+
+.active-filters-footer .chip-remove:hover {
+  color: #2dd4bf;
+}
+
+/* ============================================
    SEARCH RESULTS SECTION
    ============================================ */
 
@@ -254,6 +357,7 @@
   display: flex;
   flex-direction: column;
   margin-top: 0;
+  overflow: hidden;
 }
 
 .results-section h3 {
@@ -261,7 +365,7 @@
   font-weight: 500;
   color: #e0e0e0;
   margin-bottom: 16px;
-  padding-left: 0;
+  padding: 20px 20px 0 20px;
 }
 
 .no-results {
@@ -272,7 +376,7 @@
 }
 
 /* ============================================
-   RESULTS TABLE - MATCHING DRIVE TAB STYLE
+   RESULTS TABLE
    ============================================ */
 
 .results-table-container {
@@ -282,7 +386,8 @@
   background: transparent;
   border: none;
   border-radius: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  padding: 0 20px 20px 20px;
 }
 
 .results-table {
@@ -419,7 +524,7 @@
 }
 
 /* ============================================
-   BUTTONS - MATCHING DRIVE TAB STYLE
+   BUTTONS
    ============================================ */
 
 .button {
@@ -449,20 +554,21 @@
 }
 
 /* ============================================
-   SCROLLBAR FOR TABLE BODY
+   SCROLLBARS
    ============================================ */
 
 .results-table-container::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 .results-table-container::-webkit-scrollbar-track {
-  background: transparent;
+  background: #1a1a1a;
 }
 
 .results-table-container::-webkit-scrollbar-thumb {
   background: #3a3a3a;
-  border-radius: 4px;
+  border-radius: 5px;
+  border: 2px solid #1a1a1a;
 }
 
 .results-table-container::-webkit-scrollbar-thumb:hover {
