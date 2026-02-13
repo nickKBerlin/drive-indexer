@@ -124,15 +124,15 @@
 }
 
 /* ============================================
-   SCROLLABLE MIDDLE AREA - FILTERS
+   SCROLLABLE MIDDLE AREA - FILTERS ONLY
    ============================================ */
 
 .filters-scrollable-area {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px;
   background: #1a1a1a;
+  min-height: 0; /* Important for flex scrolling */
 }
 
 /* Custom scrollbar for filters area */
@@ -154,28 +154,51 @@
   background: #4a4a4a;
 }
 
+/* Container for filter sections */
 .filter-container-collapsible {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
+
+/* ============================================
+   FILTER SECTION LAYOUT
+   ============================================ */
 
 .filter-section-collapsible {
   background: #1f1f1f;
-  border: 1px solid #2a2a2a;
-  border-radius: 6px;
-  overflow: hidden;
+  border-bottom: 1px solid #2a2a2a;
 }
 
-/* Collapsible Header */
+.filter-section-collapsible:first-child {
+  border-top: 1px solid #2a2a2a;
+}
+
+/* Fixed Filter Header (File Types with All Filters + Clear All) */
+.filter-section-header-fixed {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #1f1f1f;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 16px 20px;
+}
+
+/* Scrollable Filter Tree Groups */
+.filter-tree-scrollable {
+  padding: 12px 20px;
+  max-height: none; /* Allow natural expansion */
+}
+
+/* Collapsible Header for File Types section */
 .collapsible-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
+  padding: 12px 20px;
   cursor: pointer;
   user-select: none;
   transition: background 150ms ease-out;
+  background: #1f1f1f;
 }
 
 .collapsible-header:hover {
@@ -210,7 +233,7 @@
   font-weight: 400;
 }
 
-/* Collapsible Content */
+/* Collapsible Content - File Types Filter Tree */
 .collapsible-content {
   max-height: 0;
   overflow: hidden;
@@ -218,28 +241,16 @@
 }
 
 .collapsible-content.expanded {
-  max-height: 2000px;
-  overflow-y: auto;
-  padding: 12px 16px;
-  border-top: 1px solid #2a2a2a;
+  max-height: none; /* Allow full expansion, scrolling handled by parent */
+  padding: 0;
 }
 
-/* Custom scrollbar */
-.collapsible-content.expanded::-webkit-scrollbar {
-  width: 8px;
-}
+/* ============================================
+   DRIVES SECTION (Also Collapsible)
+   ============================================ */
 
-.collapsible-content.expanded::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.collapsible-content.expanded::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
-  border-radius: 4px;
-}
-
-.collapsible-content.expanded::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+.collapsible-content.expanded .checkbox-group {
+  padding: 12px 20px;
 }
 
 /* ============================================
@@ -292,8 +303,23 @@
   flex-shrink: 0;
   padding: 16px 20px;
   background: #1f1f1f;
-  border-top: 1px solid #2a2a2a;
+  border-top: 2px solid #2a2a2a;
   z-index: 100;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.active-filters-footer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.active-filters-footer::-webkit-scrollbar-track {
+  background: #1f1f1f;
+}
+
+.active-filters-footer::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 4px;
 }
 
 .active-filters-footer .active-filters-title {
