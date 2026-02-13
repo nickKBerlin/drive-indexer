@@ -234,7 +234,7 @@ ipcMain.handle('get-available-drives', async (event) => {
 // Smart drive detection: finds drive even if drive letter changed
 ipcMain.handle('find-drive-location', async (event, driveId) => {
   try {
-    console.log('========================================');
+    console.log('========================================')
     console.log('[IPC] find-drive-location for drive:', driveId);
     
     // Get drive info from database
@@ -412,11 +412,28 @@ ipcMain.handle('select-folder', async (event) => {
   }
 });
 
-// Show file in Explorer
+// Show file in Explorer - FIXED to properly highlight file on first click
 ipcMain.handle('show-in-folder', async (event, filePath) => {
   try {
-    console.log('[IPC] show-in-folder:', filePath);
-    shell.showItemInFolder(filePath);
+    console.log('[IPC] show-in-folder - received path:', filePath);
+    
+    // Normalize path to use Windows backslashes
+    const normalizedPath = path.normalize(filePath);
+    console.log('[IPC] Normalized path:', normalizedPath);
+    
+    // Verify file exists before trying to show it
+    if (!fs.existsSync(normalizedPath)) {
+      console.error('[IPC] File does not exist:', normalizedPath);
+      throw new Error('File not found: ' + normalizedPath);
+    }
+    
+    console.log('[IPC] File exists, showing in Explorer...');
+    
+    // Use shell.showItemInFolder to open Explorer and highlight the file
+    // This method specifically opens the parent folder and selects the item
+    shell.showItemInFolder(normalizedPath);
+    
+    console.log('[IPC] Successfully called showItemInFolder');
     return { success: true };
   } catch (err) {
     console.error('[IPC] Error in show-in-folder:', err);
