@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './SearchPanel.css';
 import DriveLetterModal from './DriveLetterModal';
 import FilterTree from './FilterTree';
+import FolderIcon from './FolderIcon';
 
 function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
   const [selectedDrives, setSelectedDrives] = useState(new Set(drives.map(d => d.id)));
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [includeFolders, setIncludeFolders] = useState(false);  // NEW: Folder search state
+  const [includeFolders, setIncludeFolders] = useState(false);
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
   const [actionedId, setActionedId] = useState(null);
@@ -18,6 +19,19 @@ function SearchPanel({ drives, onSearch, results }) {
   // Collapsible state - both collapsed by default
   const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
   const [drivesExpanded, setDrivesExpanded] = useState(false);
+
+  // Ref for auto-focus
+  const searchInputRef = useRef(null);
+
+  // Auto-focus search input when component mounts
+  useEffect(() => {
+    if (searchInputRef.current) {
+      // Small delay to ensure component is fully rendered
+      setTimeout(() => {
+        searchInputRef.current.focus();
+      }, 100);
+    }
+  }, []); // Only run on mount
 
   // Update selected drives when drives list changes
   React.useEffect(() => {
@@ -30,7 +44,7 @@ function SearchPanel({ drives, onSearch, results }) {
     onSearch(query, {
       driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
       categories: selectedCategories.length > 0 ? selectedCategories : null,
-      includeFolders: includeFolders,  // NEW: Pass folder search flag
+      includeFolders: includeFolders,
     });
     
     // Close filter dropdowns after search to show results
@@ -233,6 +247,7 @@ function SearchPanel({ drives, onSearch, results }) {
         {/* Top: Search Input with Folder Checkbox */}
         <div className="search-input-group">
           <input
+            ref={searchInputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -368,7 +383,10 @@ function SearchPanel({ drives, onSearch, results }) {
                 {sortedResults.map((file) => (
                   <tr key={file.id}>
                     <td className="file-name">
-                      {file.resultType === 'folder' && '📁 '}
+                      {file.resultType === 'folder' && (
+                        <FolderIcon size={16} color="#c9a962" />
+                      )}
+                      {file.resultType === 'folder' ? ' ' : ''}
                       {file.fileName}
                     </td>
                     <td className="drive-name">{file.driveName}</td>
@@ -384,7 +402,11 @@ function SearchPanel({ drives, onSearch, results }) {
                         onClick={() => showInFolder(file)}
                         title={file.resultType === 'folder' ? 'Open folder in Explorer' : 'Show file in Explorer'}
                       >
-                        {actionedId === file.id ? '✅' : (file.resultType === 'folder' ? '📁' : '📂')}
+                        {actionedId === file.id ? '✅' : (
+                          file.resultType === 'folder' ? 
+                            <FolderIcon size={18} color="#c9a962" /> : 
+                            '📂'
+                        )}
                       </button>
                     </td>
                   </tr>
