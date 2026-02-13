@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import './FilterTree.css';
 
 // Category Hierarchy (matches your Drive Indexer categories)
@@ -69,7 +69,7 @@ const categoryHierarchy = {
   }
 };
 
-const FilterTree = ({ onFilterChange }) => {
+const FilterTree = forwardRef(({ onFilterChange, showHeader = true }, ref) => {
   // State: which groups are expanded
   const [expandedGroups, setExpandedGroups] = useState(new Set());
   
@@ -120,6 +120,20 @@ const FilterTree = ({ onFilterChange }) => {
     });
     return chips;
   }, [selectedFilters]);
+
+  // Expose methods to parent via ref
+  useImperativeHandle(ref, () => ({
+    toggleMasterCheckbox,
+    clearAllFilters: () => {
+      const newFilters = {};
+      Object.keys(categoryHierarchy).forEach(group => {
+        newFilters[group] = new Set();
+      });
+      setSelectedFilters(newFilters);
+    },
+    isAllSelected,
+    isSomeSelected
+  }));
 
   // Notify parent when filters change - now includes chips
   useEffect(() => {
@@ -284,30 +298,32 @@ const FilterTree = ({ onFilterChange }) => {
         </div>
       )}
 
-      {/* Header */}
-      <div className="filter-header">
-        <div>
-          <div className="filter-title">Filters</div>
-          <div className="master-checkbox-container">
-            <label className="checkbox-wrapper">
-              <input
-                type="checkbox"
-                className={`checkbox ${masterIndeterminate ? 'indeterminate' : ''}`}
-                checked={masterChecked}
-                onChange={toggleMasterCheckbox}
-              />
-              <span style={{ marginLeft: '8px', fontSize: '13px' }}>All Filters</span>
-            </label>
+      {/* Header - Only show if showHeader is true */}
+      {showHeader && (
+        <div className="filter-header">
+          <div>
+            <div className="filter-title">Filters</div>
+            <div className="master-checkbox-container">
+              <label className="checkbox-wrapper">
+                <input
+                  type="checkbox"
+                  className={`checkbox ${masterIndeterminate ? 'indeterminate' : ''}`}
+                  checked={masterChecked}
+                  onChange={toggleMasterCheckbox}
+                />
+                <span style={{ marginLeft: '8px', fontSize: '13px' }}>All Filters</span>
+              </label>
+            </div>
           </div>
+          <button 
+            type="button" 
+            className="clear-all-btn" 
+            onClick={clearAllFilters}
+          >
+            Clear All
+          </button>
         </div>
-        <button 
-          type="button" 
-          className="clear-all-btn" 
-          onClick={clearAllFilters}
-        >
-          Clear All
-        </button>
-      </div>
+      )}
 
       {/* Filter Groups */}
       <div className="filter-groups">
@@ -375,6 +391,6 @@ const FilterTree = ({ onFilterChange }) => {
       </div>
     </div>
   );
-};
+});
 
 export default FilterTree;
