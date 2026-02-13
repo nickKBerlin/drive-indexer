@@ -3,6 +3,7 @@ import './SearchPanel.css';
 import DriveLetterModal from './DriveLetterModal';
 import FilterTree from './FilterTree';
 import FolderIcon from './FolderIcon';
+import FolderFileIcon from './FolderFileIcon';
 
 function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
@@ -405,7 +406,7 @@ function SearchPanel({ drives, onSearch, results }) {
                         {actionedId === file.id ? '✅' : (
                           file.resultType === 'folder' ? 
                             <FolderIcon size={18} color="#c9a962" /> : 
-                            '📂'
+                            <FolderFileIcon size={18} color="#2dd4bf" />
                         )}
                       </button>
                     </td>
