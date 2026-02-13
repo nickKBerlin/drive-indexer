@@ -7,6 +7,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [query, setQuery] = useState('');
   const [selectedDrives, setSelectedDrives] = useState(new Set(drives.map(d => d.id)));
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [includeFolders, setIncludeFolders] = useState(false);  // NEW: Folder search state
   const [sortBy, setSortBy] = useState('fileName');
   const [sortOrder, setSortOrder] = useState('asc');
   const [actionedId, setActionedId] = useState(null);
@@ -29,6 +30,7 @@ function SearchPanel({ drives, onSearch, results }) {
     onSearch(query, {
       driveIds: selectedDrives.size > 0 ? Array.from(selectedDrives) : null,
       categories: selectedCategories.length > 0 ? selectedCategories : null,
+      includeFolders: includeFolders,  // NEW: Pass folder search flag
     });
     
     // Close filter dropdowns after search to show results
@@ -42,7 +44,7 @@ function SearchPanel({ drives, onSearch, results }) {
   };
 
   const formatSize = (bytes) => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0 || bytes === null) return '0 B';
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -190,20 +192,20 @@ function SearchPanel({ drives, onSearch, results }) {
         bVal = b.fileName.toLowerCase();
         break;
       case 'fileSize':
-        aVal = a.fileSize;
-        bVal = b.fileSize;
+        aVal = a.fileSize || 0;
+        bVal = b.fileSize || 0;
         break;
       case 'modifiedAt':
-        aVal = new Date(a.modifiedAt).getTime();
-        bVal = new Date(b.modifiedAt).getTime();
+        aVal = new Date(a.modifiedAt || 0).getTime();
+        bVal = new Date(b.modifiedAt || 0).getTime();
         break;
       case 'category':
-        aVal = a.category;
-        bVal = b.category;
+        aVal = a.category || '';
+        bVal = b.category || '';
         break;
       case 'driveName':
-        aVal = a.driveName;
-        bVal = b.driveName;
+        aVal = a.driveName || '';
+        bVal = b.driveName || '';
         break;
       default:
         return 0;
@@ -228,7 +230,7 @@ function SearchPanel({ drives, onSearch, results }) {
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
-        {/* Top: Search Input */}
+        {/* Top: Search Input with Folder Checkbox */}
         <div className="search-input-group">
           <input
             type="text"
@@ -237,6 +239,15 @@ function SearchPanel({ drives, onSearch, results }) {
             placeholder="Search for files... (e.g., 'project', '.psd', 'motion')"
             className="search-input"
           />
+          <label className="folder-checkbox-label">
+            <input
+              type="checkbox"
+              checked={includeFolders}
+              onChange={(e) => setIncludeFolders(e.target.checked)}
+              className="folder-checkbox"
+            />
+            Include folders in search results
+          </label>
           <button type="submit" className="button primary">
             Search
           </button>
@@ -263,7 +274,7 @@ function SearchPanel({ drives, onSearch, results }) {
               <>
                 <span className="scope-separator">•</span>
                 <span className="scope-item scope-results">
-                  ✓ {results.length} file{results.length !== 1 ? 's' : ''} found
+                  ✓ {results.length} result{results.length !== 1 ? 's' : ''} found
                 </span>
               </>
             )}
@@ -335,7 +346,7 @@ function SearchPanel({ drives, onSearch, results }) {
               <thead>
                 <tr>
                   <th onClick={() => handleSort('fileName')} className="sortable">
-                    File Name {sortBy === 'fileName' && (sortOrder === 'asc' ? '↑' : '↓')}
+                    Name {sortBy === 'fileName' && (sortOrder === 'asc' ? '↑' : '↓')}
                   </th>
                   <th onClick={() => handleSort('driveName')} className="sortable">
                     Drive {sortBy === 'driveName' && (sortOrder === 'asc' ? '↑' : '↓')}
@@ -356,19 +367,24 @@ function SearchPanel({ drives, onSearch, results }) {
               <tbody>
                 {sortedResults.map((file) => (
                   <tr key={file.id}>
-                    <td className="file-name">{file.fileName}</td>
+                    <td className="file-name">
+                      {file.resultType === 'folder' && '📁 '}
+                      {file.fileName}
+                    </td>
                     <td className="drive-name">{file.driveName}</td>
                     <td className="file-size">{formatSize(file.fileSize)}</td>
-                    <td className="file-type">{getFileExtension(file.fileName)}</td>
+                    <td className="file-type">
+                      {file.category === 'Folder' ? 'FOLDER' : getFileExtension(file.fileName)}
+                    </td>
                     <td className="file-date">{formatDate(file.modifiedAt)}</td>
                     <td className="file-path" title={file.filePath}>{file.filePath}</td>
                     <td className="actions-cell">
                       <button
                         className="action-button"
                         onClick={() => showInFolder(file)}
-                        title="Show file in Explorer"
+                        title={file.resultType === 'folder' ? 'Open folder in Explorer' : 'Show file in Explorer'}
                       >
-                        {actionedId === file.id ? '✅' : '📂'}
+                        {actionedId === file.id ? '✅' : (file.resultType === 'folder' ? '📁' : '📂')}
                       </button>
                     </td>
                   </tr>
@@ -381,7 +397,7 @@ function SearchPanel({ drives, onSearch, results }) {
 
       {/* No Results Message - Only show after search is performed */}
       {hasSearched && results.length === 0 && (
-        <div className="no-results">No files found matching your search.</div>
+        <div className="no-results">No results found matching your search.</div>
       )}
 
       {/* Drive Letter Modal */}
