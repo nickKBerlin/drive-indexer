@@ -103,12 +103,30 @@ const FilterTree = ({ onFilterChange }) => {
     return categories;
   }, [selectedFilters]);
 
-  // Notify parent when filters change
+  // Get active chips for display in footer
+  const getActiveChips = useCallback(() => {
+    const chips = [];
+    Object.entries(selectedFilters).forEach(([groupName, items]) => {
+      const totalItems = Object.keys(categoryHierarchy[groupName]).length;
+      if (items.size > 0 && items.size < totalItems) {
+        items.forEach(item => {
+          chips.push({ 
+            group: groupName, 
+            item,
+            onRemove: () => toggleItemSelection(groupName, item, false, null)
+          });
+        });
+      }
+    });
+    return chips;
+  }, [selectedFilters]);
+
+  // Notify parent when filters change - now includes chips
   useEffect(() => {
     if (onFilterChange) {
-      onFilterChange(getSelectedCategories());
+      onFilterChange(getSelectedCategories(), getActiveChips());
     }
-  }, [selectedFilters, getSelectedCategories, onFilterChange]);
+  }, [selectedFilters, getSelectedCategories, getActiveChips, onFilterChange]);
 
   // Handle tooltip show
   const showTooltip = (e, text) => {
@@ -247,28 +265,8 @@ const FilterTree = ({ onFilterChange }) => {
     setSelectedFilters(newFilters);
   };
 
-  // Remove individual chip
-  const removeChip = (groupName, itemName) => {
-    toggleItemSelection(groupName, itemName, false, null);
-  };
-
-  // Get active chips
-  const getActiveChips = () => {
-    const chips = [];
-    Object.entries(selectedFilters).forEach(([groupName, items]) => {
-      const totalItems = Object.keys(categoryHierarchy[groupName]).length;
-      if (items.size > 0 && items.size < totalItems) {
-        items.forEach(item => {
-          chips.push({ group: groupName, item });
-        });
-      }
-    });
-    return chips;
-  };
-
   const masterChecked = isAllSelected();
   const masterIndeterminate = !masterChecked && isSomeSelected();
-  const activeChips = getActiveChips();
 
   return (
     <div className="filter-tree">
@@ -375,26 +373,6 @@ const FilterTree = ({ onFilterChange }) => {
           );
         })}
       </div>
-
-      {/* Active Filters Chips */}
-      {activeChips.length > 0 && (
-        <div className="active-filters">
-          <div className="active-filters-title">Active Filters</div>
-          <div className="chips-container">
-            {activeChips.map(({ group, item }) => (
-              <div key={`${group}-${item}`} className="chip">
-                <span>{group}: {item}</span>
-                <span 
-                  className="chip-remove" 
-                  onClick={() => removeChip(group, item)}
-                >
-                  ×
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
