@@ -18,12 +18,12 @@ function SearchPanel({ drives, onSearch, results }) {
   const [hasSearched, setHasSearched] = useState(false);
   const [activeFilterChips, setActiveFilterChips] = useState([]);
   
-  // Collapsible state - both collapsed by default
-  const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
+  // Collapsible state
   const [drivesExpanded, setDrivesExpanded] = useState(false);
 
-  // Ref for auto-focus
+  // Ref for auto-focus and FilterTree ref for controlling it
   const searchInputRef = useRef(null);
+  const filterTreeRef = useRef(null);
 
   // Auto-focus search input when component mounts
   useEffect(() => {
@@ -47,10 +47,6 @@ function SearchPanel({ drives, onSearch, results }) {
       categories: selectedCategories.length > 0 ? selectedCategories : null,
       includeFolders: includeFolders,
     });
-    
-    // Close filter dropdowns after search to show results
-    setFileTypesExpanded(false);
-    setDrivesExpanded(false);
   };
 
   // Callback when FilterTree changes
@@ -232,15 +228,10 @@ function SearchPanel({ drives, onSearch, results }) {
     }
   };
 
-  const removeChip = (chipData) => {
-    // This will be handled by FilterTree when we click the chip remove button
-    // We need to pass this back to FilterTree
-  };
-
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
-        {/* FIXED HEADER - Search Input & Scope Info */}
+        {/* FIXED HEADER - Search Input, Scope, Filter Header */}
         <div className="search-header">
           <div className="search-input-group">
             <input
@@ -289,87 +280,86 @@ function SearchPanel({ drives, onSearch, results }) {
               </>
             )}
           </div>
+
+          {/* File Types Header Section */}
+          <div className="filter-types-header">
+            <span className="filter-types-arrow">▼</span>
+            <h4>File Types</h4>
+            <span className="filter-summary">
+              {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
+            </span>
+          </div>
         </div>
 
-        {/* SCROLLABLE MIDDLE AREA - Filters */}
+        {/* SCROLLABLE MIDDLE AREA - Only Filter Groups */}
         <div className="filters-scrollable-area">
-          <div className="filter-container-collapsible">
-            {/* File Types - Collapsible */}
-            <div className="filter-section-collapsible">
-              <div 
-                className="collapsible-header"
-                onClick={() => setFileTypesExpanded(!fileTypesExpanded)}
-              >
-                <span className={`expand-arrow ${fileTypesExpanded ? 'expanded' : ''}`}>▶</span>
-                <h4>File Types</h4>
-                <span className="filter-summary">
-                  {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
-                </span>
-              </div>
-              <div className={`collapsible-content ${fileTypesExpanded ? 'expanded' : ''}`}>
-                <FilterTree onFilterChange={handleFilterChange} />
+          <FilterTree 
+            ref={filterTreeRef}
+            onFilterChange={handleFilterChange} 
+            showHeader={true}
+          />
+        </div>
+
+        {/* FIXED FOOTER - Active Filters + Drives */}
+        <div className="filters-footer">
+          {/* Active Filters Chips */}
+          {activeFilterChips.length > 0 && (
+            <div className="active-filters-section">
+              <div className="active-filters-title">Active Filters</div>
+              <div className="chips-container">
+                {activeFilterChips.map((chip, index) => (
+                  <div key={`${chip.group}-${chip.item}-${index}`} className="chip">
+                    <span>{chip.group}: {chip.item}</span>
+                    <span 
+                      className="chip-remove" 
+                      onClick={() => chip.onRemove && chip.onRemove()}
+                    >
+                      ×
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            {/* Drives - Collapsible */}
-            <div className="filter-section-collapsible">
-              <div 
-                className="collapsible-header"
-                onClick={() => setDrivesExpanded(!drivesExpanded)}
-              >
-                <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
-                <h4>Drives</h4>
-                <span className="filter-summary">
-                  {selectedDrives.size === drives.length ? 'All' : `${selectedDrives.size}/${drives.length}`}
-                </span>
-              </div>
-              <div className={`collapsible-content ${drivesExpanded ? 'expanded' : ''}`}>
-                <div className="checkbox-group">
-                  <label className="checkbox-label">
+          {/* Drives Section - Collapsible */}
+          <div className="drives-section">
+            <div 
+              className="drives-header"
+              onClick={() => setDrivesExpanded(!drivesExpanded)}
+            >
+              <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
+              <h4>Drives</h4>
+              <span className="filter-summary">
+                {selectedDrives.size === drives.length ? 'All' : `${selectedDrives.size}/${drives.length}`}
+              </span>
+            </div>
+            <div className={`drives-content ${drivesExpanded ? 'expanded' : ''}`}>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={selectedDrives.size === drives.length}
+                    onChange={toggleAllDrives}
+                  />
+                  <strong>All Drives</strong>
+                </label>
+                <hr className="filter-divider" />
+                {drives.map((drive) => (
+                  <label key={drive.id} className="checkbox-label">
                     <input
                       type="checkbox"
-                      checked={selectedDrives.size === drives.length}
-                      onChange={toggleAllDrives}
+                      checked={selectedDrives.has(drive.id)}
+                      onChange={() => toggleDrive(drive.id)}
                     />
-                    <strong>All Drives</strong>
+                    {drive.name}
+                    <span className="file-count">({drive.fileCount || 0})</span>
                   </label>
-                  <hr className="filter-divider" />
-                  {drives.map((drive) => (
-                    <label key={drive.id} className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={selectedDrives.has(drive.id)}
-                        onChange={() => toggleDrive(drive.id)}
-                      />
-                      {drive.name}
-                      <span className="file-count">({drive.fileCount || 0})</span>
-                    </label>
-                  ))}
-                </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
-
-        {/* FIXED FOOTER - Active Filters */}
-        {activeFilterChips.length > 0 && (
-          <div className="active-filters-footer">
-            <div className="active-filters-title">Active Filters</div>
-            <div className="chips-container">
-              {activeFilterChips.map((chip, index) => (
-                <div key={`${chip.group}-${chip.item}-${index}`} className="chip">
-                  <span>{chip.group}: {chip.item}</span>
-                  <span 
-                    className="chip-remove" 
-                    onClick={() => chip.onRemove && chip.onRemove()}
-                  >
-                    ×
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </form>
 
       {/* Results Table */}
