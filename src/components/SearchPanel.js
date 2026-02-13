@@ -16,6 +16,7 @@ function SearchPanel({ drives, onSearch, results }) {
   const [showModal, setShowModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [activeFilterChips, setActiveFilterChips] = useState([]);
   
   // Collapsible state - both collapsed by default
   const [fileTypesExpanded, setFileTypesExpanded] = useState(false);
@@ -27,12 +28,11 @@ function SearchPanel({ drives, onSearch, results }) {
   // Auto-focus search input when component mounts
   useEffect(() => {
     if (searchInputRef.current) {
-      // Small delay to ensure component is fully rendered
       setTimeout(() => {
         searchInputRef.current.focus();
       }, 100);
     }
-  }, []); // Only run on mount
+  }, []);
 
   // Update selected drives when drives list changes
   React.useEffect(() => {
@@ -54,8 +54,9 @@ function SearchPanel({ drives, onSearch, results }) {
   };
 
   // Callback when FilterTree changes
-  const handleFilterChange = (categories) => {
+  const handleFilterChange = (categories, chips) => {
     setSelectedCategories(categories);
+    setActiveFilterChips(chips || []);
   };
 
   const formatSize = (bytes) => {
@@ -71,7 +72,6 @@ function SearchPanel({ drives, onSearch, results }) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Extract file extension from filename
   const getFileExtension = (fileName) => {
     const lastDot = fileName.lastIndexOf('.');
     if (lastDot === -1) return '-';
@@ -85,30 +85,24 @@ function SearchPanel({ drives, onSearch, results }) {
       console.log('[SearchPanel] Drive:', file.driveName);
       console.log('[SearchPanel] Scan path from DB:', file.driveScanPath);
       
-      // Check if required fields are present
       if (!file.fileName || !file.driveName || !file.filePath) {
         console.error('[SearchPanel] ERROR: Missing required file fields!');
         alert('Error: File information is incomplete. Please try rescanning the drive.');
         return;
       }
       
-      // Smart detection: Check if we have scanPath and if the FULL FILE PATH still exists
       if (file.driveScanPath) {
-        // Normalize paths: convert both to forward slashes first, then to backslashes
         const normalizedDrivePath = file.driveScanPath.replace(/\\/g, '/');
         const normalizedFilePath = file.filePath.replace(/\\/g, '/');
         
-        // Remove trailing slash from drive path if present
         const cleanDrivePath = normalizedDrivePath.endsWith('/') 
           ? normalizedDrivePath.slice(0, -1) 
           : normalizedDrivePath;
         
-        // Join paths and convert to Windows backslashes
         const fullPath = `${cleanDrivePath}/${normalizedFilePath}`.replace(/\//g, '\\');
         console.log('[SearchPanel] Constructed full path:', fullPath);
         
         try {
-          // Check if the FULL FILE PATH exists (not just the drive)
           console.log('[SearchPanel] Checking if full file path exists...');
           const fileExists = await window.api.checkPathExists(fullPath);
           console.log('[SearchPanel] File exists result:', fileExists);
@@ -125,20 +119,17 @@ function SearchPanel({ drives, onSearch, results }) {
               return;
             } catch (openError) {
               console.error('[SearchPanel] Error opening file location:', openError);
-              // Fall through to show modal
             }
           } else {
             console.log('[SearchPanel] File no longer exists at original path, showing modal...');
           }
         } catch (pathCheckError) {
           console.error('[SearchPanel] Error checking file path:', pathCheckError);
-          // Continue to show modal
         }
       } else {
         console.log('[SearchPanel] No driveScanPath in file object');
       }
       
-      // Fallback: Show modal for manual drive selection
       console.log('[SearchPanel] Opening modal for manual drive selection');
       setSelectedFile(file);
       setShowModal(true);
@@ -154,7 +145,6 @@ function SearchPanel({ drives, onSearch, results }) {
       console.log('[SearchPanel] File path:', selectedFile.filePath);
       
       const cleanLetter = driveLetter.trim().toUpperCase().replace(':', '');
-      // Normalize file path to forward slashes first, then convert to backslashes
       const normalizedFilePath = selectedFile.filePath.replace(/\\/g, '/');
       const fullPath = `${cleanLetter}:/${normalizedFilePath}`.replace(/\//g, '\\');
       
@@ -242,36 +232,40 @@ function SearchPanel({ drives, onSearch, results }) {
     }
   };
 
+  const removeChip = (chipData) => {
+    // This will be handled by FilterTree when we click the chip remove button
+    // We need to pass this back to FilterTree
+  };
+
   return (
     <div className="search-panel">
       <form className="search-form" onSubmit={handleSearch}>
-        {/* Top: Search Input with Folder Checkbox */}
-        <div className="search-input-group">
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for files... (e.g., 'project', '.psd', 'motion')"
-            className="search-input"
-          />
-          <label className="folder-checkbox-label">
+        {/* FIXED HEADER - Search Input & Scope Info */}
+        <div className="search-header">
+          <div className="search-input-group">
             <input
-              type="checkbox"
-              checked={includeFolders}
-              onChange={(e) => setIncludeFolders(e.target.checked)}
-              className="folder-checkbox"
+              ref={searchInputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search for files... (e.g., 'project', '.psd', 'motion')"
+              className="search-input"
             />
-            Include folders in search results
-          </label>
-          <button type="submit" className="button primary">
-            Search
-          </button>
-        </div>
+            <label className="folder-checkbox-label">
+              <input
+                type="checkbox"
+                checked={includeFolders}
+                onChange={(e) => setIncludeFolders(e.target.checked)}
+                className="folder-checkbox"
+              />
+              Include folders in search results
+            </label>
+            <button type="submit" className="button primary">
+              Search
+            </button>
+          </div>
 
-        {/* Collapsible Filter Sections */}
-        <div className="filter-container-collapsible">
-          {/* Search Scope Info - Compact Horizontal Layout */}
+          {/* Search Scope Info */}
           <div className="search-scope-compact">
             <span className="scope-item">
               {selectedCategories.length === 0 
@@ -295,62 +289,87 @@ function SearchPanel({ drives, onSearch, results }) {
               </>
             )}
           </div>
+        </div>
 
-          {/* File Types - Collapsible */}
-          <div className="filter-section-collapsible">
-            <div 
-              className="collapsible-header clickable"
-              onClick={() => setFileTypesExpanded(!fileTypesExpanded)}
-            >
-              <span className={`expand-arrow ${fileTypesExpanded ? 'expanded' : ''}`}>▶</span>
-              <h4>File Types</h4>
-              <span className="filter-summary">
-                {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
-              </span>
+        {/* SCROLLABLE MIDDLE AREA - Filters */}
+        <div className="filters-scrollable-area">
+          <div className="filter-container-collapsible">
+            {/* File Types - Collapsible */}
+            <div className="filter-section-collapsible">
+              <div 
+                className="collapsible-header"
+                onClick={() => setFileTypesExpanded(!fileTypesExpanded)}
+              >
+                <span className={`expand-arrow ${fileTypesExpanded ? 'expanded' : ''}`}>▶</span>
+                <h4>File Types</h4>
+                <span className="filter-summary">
+                  {selectedCategories.length === 0 ? 'All' : `${selectedCategories.length} selected`}
+                </span>
+              </div>
+              <div className={`collapsible-content ${fileTypesExpanded ? 'expanded' : ''}`}>
+                <FilterTree onFilterChange={handleFilterChange} />
+              </div>
             </div>
-            <div className={`collapsible-content ${fileTypesExpanded ? 'expanded' : ''}`}>
-              <FilterTree onFilterChange={handleFilterChange} />
-            </div>
-          </div>
 
-          {/* Drives - Collapsible */}
-          <div className="filter-section-collapsible">
-            <div 
-              className="collapsible-header clickable"
-              onClick={() => setDrivesExpanded(!drivesExpanded)}
-            >
-              <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
-              <h4>Drives</h4>
-              <span className="filter-summary">
-                {selectedDrives.size === drives.length ? 'All' : `${selectedDrives.size}/${drives.length}`}
-              </span>
-            </div>
-            <div className={`collapsible-content ${drivesExpanded ? 'expanded' : ''}`}>
-              <div className="checkbox-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={selectedDrives.size === drives.length}
-                    onChange={toggleAllDrives}
-                  />
-                  <strong>All Drives</strong>
-                </label>
-                <hr className="filter-divider" />
-                {drives.map((drive) => (
-                  <label key={drive.id} className="checkbox-label">
+            {/* Drives - Collapsible */}
+            <div className="filter-section-collapsible">
+              <div 
+                className="collapsible-header"
+                onClick={() => setDrivesExpanded(!drivesExpanded)}
+              >
+                <span className={`expand-arrow ${drivesExpanded ? 'expanded' : ''}`}>▶</span>
+                <h4>Drives</h4>
+                <span className="filter-summary">
+                  {selectedDrives.size === drives.length ? 'All' : `${selectedDrives.size}/${drives.length}`}
+                </span>
+              </div>
+              <div className={`collapsible-content ${drivesExpanded ? 'expanded' : ''}`}>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
                     <input
                       type="checkbox"
-                      checked={selectedDrives.has(drive.id)}
-                      onChange={() => toggleDrive(drive.id)}
+                      checked={selectedDrives.size === drives.length}
+                      onChange={toggleAllDrives}
                     />
-                    {drive.name}
-                    <span className="file-count">({drive.fileCount || 0})</span>
+                    <strong>All Drives</strong>
                   </label>
-                ))}
+                  <hr className="filter-divider" />
+                  {drives.map((drive) => (
+                    <label key={drive.id} className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={selectedDrives.has(drive.id)}
+                        onChange={() => toggleDrive(drive.id)}
+                      />
+                      {drive.name}
+                      <span className="file-count">({drive.fileCount || 0})</span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* FIXED FOOTER - Active Filters */}
+        {activeFilterChips.length > 0 && (
+          <div className="active-filters-footer">
+            <div className="active-filters-title">Active Filters</div>
+            <div className="chips-container">
+              {activeFilterChips.map((chip, index) => (
+                <div key={`${chip.group}-${chip.item}-${index}`} className="chip">
+                  <span>{chip.group}: {chip.item}</span>
+                  <span 
+                    className="chip-remove" 
+                    onClick={() => chip.onRemove && chip.onRemove()}
+                  >
+                    ×
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </form>
 
       {/* Results Table */}
@@ -418,7 +437,7 @@ function SearchPanel({ drives, onSearch, results }) {
         </div>
       )}
 
-      {/* No Results Message - Only show after search is performed */}
+      {/* No Results Message */}
       {hasSearched && results.length === 0 && (
         <div className="no-results">No results found matching your search.</div>
       )}
